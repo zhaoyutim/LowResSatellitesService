@@ -1,0 +1,13 @@
+!!python/object/new:easydict.EasyDict
+dictitems:
+  bar: &id001 !!python/object/new:easydict.EasyDict
+    dictitems:
+      x: 1
+      y: 2
+    state:
+      x: 1
+      y: 2
+  foo: 3
+state:
+  bar: *id001
+  foo: 3
