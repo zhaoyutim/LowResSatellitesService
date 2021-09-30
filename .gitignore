@@ -3,3 +3,6 @@ data
 .DS_Store
 .idea
 LowResSatellitesService/secrets.yaml
+.gitignore
+AwsData
+kamloop
