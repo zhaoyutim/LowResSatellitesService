@@ -103,7 +103,3 @@ if __name__=='__main__':
 
         cmd = "gdal_translate " + path_to_data + "/VNPIMG"+vnp02_name.split('.')[1]+vnp02_name.split('.')[2]+".vrt " + path_to_geotiff +"/VNPIMG"+vnp02_name.split('.')[1]+vnp02_name.split('.')[2]+".tif"
         subprocess.call(cmd.split())
-
-        if os.path.exists(path_to_geotiff + "/VNPIMG" + vnp02_name.split('.')[1] + vnp02_name.split('.')[2] + ".tif"):
-            shutil.rmtree(date_path + '/' + date + '/' + time_captured)
-            print("remove all data files")
