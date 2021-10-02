@@ -1,7 +1,5 @@
 import os
 import shutil
-
-import wget as wget
 from satpy.scene import Scene
 from satpy import find_files_and_readers
 from pyresample import create_area_def
@@ -13,14 +11,10 @@ import json
 import argparse
 
 if __name__=='__main__':
-    parser = argparse.ArgumentParser(description='assign processing date')
-    parser.add_argument('date', type=str,
-                        help='assign processing date')
-    args = parser.parse_args()
 
     date_path = 'data/VNPL1'
     save_path = 'data/VNPIMGTIF'
-    date = args.date
+    date = '253'
     ladsweb_link_vnp02 = 'https://ladsweb.modaps.eosdis.nasa.gov/archive/allData/5110/VNP02IMG/2020/'
     ladsweb_link_vnp03 = 'https://ladsweb.modaps.eosdis.nasa.gov/archive/allData/5110/VNP03IMG/2020/'
     if not os.path.exists(date_path+'/'+date + '/'+date+'.json'):
@@ -58,6 +52,7 @@ if __name__=='__main__':
         if os.path.exists(path_to_geotiff + "/VNPIMG" + vnp02_name.split('.')[1] + vnp02_name.split('.')[2] + ".tif"):
             print("The GEOTIFF for time "+vnp02_name.split('.')[1] + vnp02_name.split('.')[2]+" has been created!")
             continue
+
         print(time_captured)
         vnp02_link = ladsweb_link_vnp02 + date + '/' + vnp02_name
         vnp03_link = ladsweb_link_vnp03 + date + '/' + vnp03_name
@@ -74,32 +69,67 @@ if __name__=='__main__':
             os.system(wget_command_vnp02)
             os.system(wget_command_vnp03)
 
+        try:
+            files = find_files_and_readers(base_dir=path_to_data, reader='viirs_l1b')
+            scn = Scene(filenames=files)
+            scn.load(['I01','I02','I03','I04','I05', 'i_lat', 'i_lon'])
 
-        files = find_files_and_readers(base_dir=path_to_data, reader='viirs_l1b')
-        scn = Scene(filenames=files)
-        scn.load(['I01','I02','I03','I04','I05', 'i_lat', 'i_lon'])
+            lon=scn['i_lon'].values
+            lat=scn['i_lat'].values
+            area = create_area_def(area_id="area", projection='WGS84', shape=(lat.shape[1],lat.shape[0]), lon=lon, lat=lat)
+            new_scn = scn.resample(destination=area)
+            # compositor = GenericCompositor("overview")
+            # composite = compositor([new_scn['I01'],new_scn['I02'],new_scn['I03'],new_scn['I04'],new_scn['I05']])
 
-        lon=scn['i_lon'].values
-        lat=scn['i_lat'].values
-        area = create_area_def(area_id="area", projection='WGS84', shape=(lat.shape[1],lat.shape[0]), lon=lon, lat=lat)
-        new_scn = scn.resample(destination=area)
-        # compositor = GenericCompositor("overview")
-        # composite = compositor([new_scn['I01'],new_scn['I02'],new_scn['I03'],new_scn['I04'],new_scn['I05']])
+            new_scn.save_datasets(
+                filename='{name}_{start_time:%Y%m%d_%H%M%S}.tif',
+                datasets=['I01','I02','I03','I04','I05'],
+                enhance=False,
+                base_dir=path_to_data)
 
-        new_scn.save_datasets(
-            filename='{name}_{start_time:%Y%m%d_%H%M%S}.tif',
-            datasets=['I01','I02','I03','I04','I05'],
-            base_dir=path_to_data)
+            # list all files in directory that match pattern
+            demList = glob.glob(path_to_data + "/I[0-9]*_[0-9]*_[0-9]*.tif")
+            demList.sort()
+            demList = ' '.join(map(str, demList))
+            print(demList)
 
-        # list all files in directory that match pattern
-        demList = glob.glob(path_to_data + "/I[0-9]*_[0-9]*_[0-9]*.tif")
-        demList.sort()
-        demList = ' '.join(map(str, demList))
-        print(demList)
+            # gdal_merge
+            cmd = "gdalbuildvrt -srcnodata 0 -vrtnodata 0 -separate " + path_to_data + "/VNPIMG"+vnp02_name.split('.')[1]+vnp02_name.split('.')[2]+".vrt " + demList
+            subprocess.call(cmd.split())
 
-        # gdal_merge
-        cmd = "gdalbuildvrt -srcnodata 0 -vrtnodata 0 -separate " + path_to_data + "/VNPIMG"+vnp02_name.split('.')[1]+vnp02_name.split('.')[2]+".vrt " + demList
-        subprocess.call(cmd.split())
+            cmd = "gdal_translate " + path_to_data + "/VNPIMG"+vnp02_name.split('.')[1]+vnp02_name.split('.')[2]+".vrt " + path_to_geotiff +"/VNPIMG"+vnp02_name.split('.')[1]+vnp02_name.split('.')[2]+".tif"
+            subprocess.call(cmd.split())
+        except:
+            files = find_files_and_readers(base_dir=path_to_data, reader='viirs_l1b')
+            scn = Scene(filenames=files)
+            scn.load(['I04', 'I05', 'i_lat', 'i_lon'])
 
-        cmd = "gdal_translate " + path_to_data + "/VNPIMG"+vnp02_name.split('.')[1]+vnp02_name.split('.')[2]+".vrt " + path_to_geotiff +"/VNPIMG"+vnp02_name.split('.')[1]+vnp02_name.split('.')[2]+".tif"
-        subprocess.call(cmd.split())
+            lon = scn['i_lon'].values
+            lat = scn['i_lat'].values
+            area = create_area_def(area_id="area", projection='WGS84', shape=(lat.shape[1], lat.shape[0]), lon=lon,
+                                   lat=lat)
+            new_scn = scn.resample(destination=area)
+            # compositor = GenericCompositor("overview")
+            # composite = compositor([new_scn['I01'],new_scn['I02'],new_scn['I03'],new_scn['I04'],new_scn['I05']])
+
+            new_scn.save_datasets(
+                filename='{name}_{start_time:%Y%m%d_%H%M%S}.tif',
+                datasets=['I04', 'I05'],
+                enhance=False,
+                base_dir=path_to_data)
+
+            # list all files in directory that match pattern
+            demList = glob.glob(path_to_data + "/I[0-9]*_[0-9]*_[0-9]*.tif")
+            demList.sort()
+            demList = ' '.join(map(str, demList))
+            print(demList)
+
+            # gdal_merge
+            cmd = "gdalbuildvrt -srcnodata 0 -vrtnodata 0 -separate " + path_to_data + "/VNPIMG" + \
+                  vnp02_name.split('.')[1] + vnp02_name.split('.')[2] + ".vrt " + demList
+            subprocess.call(cmd.split())
+
+            cmd = "gdal_translate " + path_to_data + "/VNPIMG" + vnp02_name.split('.')[1] + vnp02_name.split('.')[
+                2] + ".vrt " + path_to_geotiff + "/VNPIMG" + vnp02_name.split('.')[1] + vnp02_name.split('.')[
+                      2] + ".tif"
+            subprocess.call(cmd.split())
