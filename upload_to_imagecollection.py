@@ -31,7 +31,7 @@ if __name__ == '__main__':
     file_list.sort()
     # for file in file_list:
     #     print(file.split('/')[-3]+'/'+file.split('/')[-2]+'/'+file.split('/')[-1])
-    #     os.system('rio cogeo create '+ file +' data/cogtif/'+file.split('/')[-1])
+    #     os.system('rio cogeo create '+ file +' data/cogtif/'+file.split('/')[-1])aa
     file_list = glob('/Users/zhaoyu/PycharmProjects/LowResSatellitesService/data/cogtif/*.tif')
     file_list.sort()
     # for file in file_list:
