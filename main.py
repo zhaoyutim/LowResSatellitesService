@@ -12,13 +12,14 @@ import argparse
 
 if __name__=='__main__':
     parser = argparse.ArgumentParser(description='assign processing date')
-    parser.add_argument('date', type=str,
-                        help='assign processing date')
+    parser.add_argument('--date', '-d', type=str, help='assign processing date')
+    parser.add_argument('--time', '-t', type=str, help='assign processing time')
     args = parser.parse_args()
 
     date_path = 'data/VNPL1'
     save_path = 'data/VNPIMGTIF'
     date = args.date
+    time = args.time
     ladsweb_link_vnp02 = 'https://ladsweb.modaps.eosdis.nasa.gov/archive/allData/5110/VNP02IMG/2021/'
     ladsweb_link_vnp03 = 'https://ladsweb.modaps.eosdis.nasa.gov/archive/allData/5110/VNP03IMG/2021/'
     if not os.path.exists(date_path+'/'+date + '/'+date+'.json'):
@@ -45,19 +46,22 @@ if __name__=='__main__':
     vnp03_list = json.load(vnp03_json)
     for (vnp02_file, vnp03_file) in zip(vnp02_list, vnp03_list):
 
-
         vnp02_name = vnp02_file['name']
         vnp03_name = vnp03_file['name']
         vnp02_create_time = vnp02_file['last-modified']
-
         time_captured = vnp02_name.split('.')[2]
+        if int(time_captured) != int(time):
+            continue
         path_to_data = date_path + '/' + date + '/' + time_captured
         path_to_geotiff = save_path + '/' + date + '/' + time_captured
+
+        # if not (int(time_captured)>=1900 and int(time_captured)<=2100 or int(time_captured)>=800 and int(time_captured)<=1000):
+        #     continue
+
         if os.path.exists(path_to_geotiff + "/VNPIMG" + vnp02_name.split('.')[1] + vnp02_name.split('.')[2] + ".tif"):
             print("The GEOTIFF for time "+vnp02_name.split('.')[1] + vnp02_name.split('.')[2]+" has been created!")
             continue
-        if not (int(time_captured)>=1900 and int(time_captured)<=2100 or int(time_captured)>=800 and int(time_captured)<=1000):
-            continue
+
         print(time_captured)
         vnp02_link = ladsweb_link_vnp02 + date + '/' + vnp02_name
         vnp03_link = ladsweb_link_vnp03 + date + '/' + vnp03_name
@@ -104,6 +108,11 @@ if __name__=='__main__':
 
             cmd = "gdal_translate " + path_to_data + "/VNPIMG"+vnp02_name.split('.')[1]+vnp02_name.split('.')[2]+".vrt " + path_to_geotiff +"/VNPIMG"+vnp02_name.split('.')[1]+vnp02_name.split('.')[2]+".tif"
             subprocess.call(cmd.split())
+
+            os.system('rio cogeo create '+ path_to_geotiff +'/VNPIMG'+vnp02_name.split('.')[1]+vnp02_name.split('.')[2]+'.tif' + ' data/cogtif/'+vnp02_name.split('.')[2]+'.tif')
+
+            upload_cmd = 'gsutil cp ' + 'data/cogtif/'+vnp02_name.split('.')[2]+'.tif' + ' gs://ai4wildfire/' + 'VNPIMGTIF/'+'2021'+date+'/' + vnp02_name.split('.')[2]+'.tif'
+            subprocess.call(upload_cmd.split())
         except:
             try:
                 files = find_files_and_readers(base_dir=path_to_data, reader='viirs_l1b')
@@ -119,9 +128,9 @@ if __name__=='__main__':
                 # composite = compositor([new_scn['I01'],new_scn['I02'],new_scn['I03'],new_scn['I04'],new_scn['I05']])
 
                 new_scn.save_datasets(
+                    writer='geotiff', dtype=np.float32, enhance=False,
                     filename='{name}_{start_time:%Y%m%d_%H%M%S}.tif',
                     datasets=['I04', 'I05'],
-                    enhance=False,
                     base_dir=path_to_data)
 
                 # list all files in directory that match pattern
@@ -139,5 +148,13 @@ if __name__=='__main__':
                     2] + ".vrt " + path_to_geotiff + "/VNPIMG" + vnp02_name.split('.')[1] + vnp02_name.split('.')[
                           2] + ".tif"
                 subprocess.call(cmd.split())
+
+                os.system('rio cogeo create ' + path_to_geotiff + '/VNPIMG' + vnp02_name.split('.')[1] +
+                          vnp02_name.split('.')[2] + '.tif' + ' data/cogtif/' + vnp02_name.split('.')[2] + '.tif')
+
+                upload_cmd = 'gsutil cp ' + 'data/cogtif/' + vnp02_name.split('.')[
+                    2] + '.tif' + ' gs://ai4wildfire/' + 'VNPIMGTIF/' + '2021' + date + '/' + vnp02_name.split('.')[
+                                 2] + '.tif'
+                subprocess.call(upload_cmd.split())
             except:
                 pass
