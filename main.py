@@ -18,6 +18,7 @@ if __name__=='__main__':
 
     date_path = 'data/VNPL1'
     save_path = 'data/VNPIMGTIF'
+    roi=(-124.5, 32.44, -114, 41.68)
     date = args.date
     time = args.time
     ladsweb_link_vnp02 = 'https://ladsweb.modaps.eosdis.nasa.gov/archive/allData/5110/VNP02IMG/2021/'
@@ -89,11 +90,12 @@ if __name__=='__main__':
             new_scn = scn.resample(destination=area)
             # compositor = GenericCompositor("overview")
             # composite = compositor([new_scn['I01'],new_scn['I02'],new_scn['I03'],new_scn['I04'],new_scn['I05']])
+            scene_llbox = new_scn.crop(xy_bbox=roi)
 
-            new_scn.save_datasets(
+            scene_llbox.save_datasets(
                 writer='geotiff', dtype=np.float32, enhance=False,
                 filename='{name}_{start_time:%Y%m%d_%H%M%S}.tif',
-                datasets=['I01','I02','I03','I04','I05'],
+                datasets=['I01', 'I02', 'I03', 'I04', 'I05'],
                 base_dir=path_to_data)
 
             # list all files in directory that match pattern
@@ -109,10 +111,6 @@ if __name__=='__main__':
             cmd = "gdal_translate " + path_to_data + "/VNPIMG"+vnp02_name.split('.')[1]+vnp02_name.split('.')[2]+".vrt " + path_to_geotiff +"/VNPIMG"+vnp02_name.split('.')[1]+vnp02_name.split('.')[2]+".tif"
             subprocess.call(cmd.split())
 
-            os.system('rio cogeo create '+ path_to_geotiff +'/VNPIMG'+vnp02_name.split('.')[1]+vnp02_name.split('.')[2]+'.tif' + ' data/cogtif/'+vnp02_name.split('.')[2]+'.tif')
-
-            upload_cmd = 'gsutil cp ' + 'data/cogtif/'+vnp02_name.split('.')[2]+'.tif' + ' gs://ai4wildfire/' + 'VNPIMGTIF/'+'2021'+date+'/' + vnp02_name.split('.')[2]+'.tif'
-            subprocess.call(upload_cmd.split())
         except:
             try:
                 files = find_files_and_readers(base_dir=path_to_data, reader='viirs_l1b')
@@ -127,7 +125,9 @@ if __name__=='__main__':
                 # compositor = GenericCompositor("overview")
                 # composite = compositor([new_scn['I01'],new_scn['I02'],new_scn['I03'],new_scn['I04'],new_scn['I05']])
 
-                new_scn.save_datasets(
+                scene_llbox = new_scn.crop(xy_bbox=roi)
+
+                scene_llbox.save_datasets(
                     writer='geotiff', dtype=np.float32, enhance=False,
                     filename='{name}_{start_time:%Y%m%d_%H%M%S}.tif',
                     datasets=['I04', 'I05'],
@@ -149,12 +149,5 @@ if __name__=='__main__':
                           2] + ".tif"
                 subprocess.call(cmd.split())
 
-                os.system('rio cogeo create ' + path_to_geotiff + '/VNPIMG' + vnp02_name.split('.')[1] +
-                          vnp02_name.split('.')[2] + '.tif' + ' data/cogtif/' + vnp02_name.split('.')[2] + '.tif')
-
-                upload_cmd = 'gsutil cp ' + 'data/cogtif/' + vnp02_name.split('.')[
-                    2] + '.tif' + ' gs://ai4wildfire/' + 'VNPIMGTIF/' + '2021' + date + '/' + vnp02_name.split('.')[
-                                 2] + '.tif'
-                subprocess.call(upload_cmd.split())
             except:
                 pass
