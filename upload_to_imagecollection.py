@@ -1,46 +1,45 @@
+import datetime
 import os
 import subprocess
 from glob import glob
 from google.cloud import storage
 
 
-def upload_blob(bucket_name, source_file_name, destination_blob_name):
-    """Uploads a file to the bucket."""
-    # The ID of your GCS bucket
-    # bucket_name = "your-bucket-name"
-    # The path to your file to upload
-    # source_file_name = "local/path/to/file"
-    # The ID of your GCS object
-    # destination_blob_name = "storage-object-name"
+def get_time_start(date_string):
+    year = date_string[:4]
+    day = datetime.date.fromisoformat(year+'-01-01') + datetime.timedelta(days=int(date_string[4:7])-1)
+    hour = date_string[7:9]
+    min = date_string[9:]
+    return str(day)+'T'+hour+':'+min+':'+'00'
 
-    storage_client = storage.Client()
-    bucket = storage_client.bucket(bucket_name)
-    blob = bucket.blob(destination_blob_name)
-
-    blob.upload_from_filename(source_file_name)
-
-    print(
-        "File {} uploaded to {}.".format(
-            source_file_name, destination_blob_name
-        )
-    )
 
 if __name__ == '__main__':
-    file_dir = '/Users/zhaoyu/PycharmProjects/LowResSatellitesService/data/VNPIMGTIF/253'
-    file_list = glob(file_dir+'/*/*.tif')
+    file_dir = 'data/VNPIMGTIF'
+    # file_list = glob(file_dir+'/*/*/*.tif')
+    # file_list.sort()
+    # if not os.path.exists('data\\cogtif'):
+    #     os.mkdir('data\\cogtif')
+    # for file in file_list:
+    #     date = file.split('\\')[-3]
+    #     time = file.split('\\')[-2]
+    #     file_name = file.split('\\')[-1]
+    #     print(date+'/'+time+'/'+file_name)
+    #     if not os.path.exists('data\\cogtif\\'+date):
+    #         os.mkdir('data\\cogtif\\'+date)
+    #     os.system('rio cogeo create '+ file +' data\\cogtif\\'+'\\'+date+'\\'+file_name)
+    file_list = glob('data\\cogtif/*/*.tif')
     file_list.sort()
     # for file in file_list:
-    #     print(file.split('/')[-3]+'/'+file.split('/')[-2]+'/'+file.split('/')[-1])
-    #     os.system('rio cogeo create '+ file +' data/cogtif/'+file.split('/')[-1])aa
-    file_list = glob('/Users/zhaoyu/PycharmProjects/LowResSatellitesService/data/cogtif/*.tif')
-    file_list.sort()
-    # for file in file_list:
-    #     upload_cmd = 'gsutil cp '+file+' gs://ai4wildfire/'+'VNPIMGTIF/2020253/'+file.split('/')[-1]
-    #     subprocess.call(upload_cmd.split())
+    #     date = file.split('\\')[-2]
+    #     file_name = file.split('\\')[-1]
+    #     upload_cmd = 'gsutil cp '+file.replace('\\','/')+' gs://ai4wildfire/'+'VNPIMGTIF/2021'+date+'/'+file_name
+    #     os.system(upload_cmd)
+        # subprocess.call(upload_cmd.split())
+
     for file in file_list:
-        # upload_blob('ai4wildfire', file, 'VNPIMGTIF'+file.split('/')[-3]+'/'+file.split('/')[-2]+'/'+file.split('/')[-1])
-        cmd = 'earthengine upload image --asset_id=projects/grand-drive-285514/assets/viirs_375/'+file.split('/')[-1][:-4]+' --pyramiding_policy=sample gs://ai4wildfire/'+'VNPIMGTIF/2020253/'+file.split('/')[-1]
+        date = file.split('\\')[-2]
+        file_name = file.split('\\')[-1]
+        time_start = get_time_start(file_name[7:-4])
+        
+        cmd = 'earthengine upload image --time_start '+time_start+' --asset_id=projects/grand-drive-285514/assets/viirs_375/'+file.split('\\')[-1][:-4]+' --pyramiding_policy=sample gs://ai4wildfire/'+'VNPIMGTIF/2021'+date+'/'+file_name
         subprocess.call(cmd.split())
-        # cmd_set_property = 'earthengine asset set --time_start {time_start} {asset_id}'
-        # subprocess.call(cmd_set_property.split())
-        # print(file.split('/')[-1])

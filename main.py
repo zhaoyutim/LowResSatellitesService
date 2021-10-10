@@ -18,7 +18,7 @@ if __name__=='__main__':
 
     date_path = 'data/VNPL1'
     save_path = 'data/VNPIMGTIF'
-    roi=(-124.5, 32.44, -114, 41.68)
+roi=(-124.48, 32.54, -114.06, 41.98)
     date = args.date
     time = args.time
     ladsweb_link_vnp02 = 'https://ladsweb.modaps.eosdis.nasa.gov/archive/allData/5110/VNP02IMG/2021/'
