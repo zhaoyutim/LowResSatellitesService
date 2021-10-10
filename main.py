@@ -18,7 +18,8 @@ if __name__=='__main__':
 
     date_path = 'data/VNPL1'
     save_path = 'data/VNPIMGTIF'
-roi=(-124.48, 32.54, -114.06, 41.98)
+
+    roi=(-124.48, 32.54, -114.06, 41.98)
     date = args.date
     time = args.time
     ladsweb_link_vnp02 = 'https://ladsweb.modaps.eosdis.nasa.gov/archive/allData/5110/VNP02IMG/2021/'
@@ -54,12 +55,17 @@ roi=(-124.48, 32.54, -114.06, 41.98)
         if int(time_captured) != int(time):
             continue
         path_to_data = date_path + '/' + date + '/' + time_captured
-        path_to_geotiff = save_path + '/' + date + '/' + time_captured
+        path_to_geotiff_day = save_path + '/' + date + '/' + time_captured+'_D'
 
-        # if not (int(time_captured)>=1900 and int(time_captured)<=2100 or int(time_captured)>=800 and int(time_captured)<=1000):
-        #     continue
 
-        if os.path.exists(path_to_geotiff + "/VNPIMG" + vnp02_name.split('.')[1] + vnp02_name.split('.')[2] + ".tif"):
+        if os.path.exists(path_to_geotiff_day + "/VNPIMG" + vnp02_name.split('.')[1] + vnp02_name.split('.')[2] + ".tif"):
+            print("The GEOTIFF for time "+vnp02_name.split('.')[1] + vnp02_name.split('.')[2]+" has been created!")
+            continue
+
+        path_to_geotiff_night = save_path + '/' + date + '/' + time_captured+'_N'
+
+
+        if os.path.exists(path_to_geotiff_night + "/VNPIMG" + vnp02_name.split('.')[1] + vnp02_name.split('.')[2] + ".tif"):
             print("The GEOTIFF for time "+vnp02_name.split('.')[1] + vnp02_name.split('.')[2]+" has been created!")
             continue
 
@@ -105,10 +111,13 @@ roi=(-124.48, 32.54, -114.06, 41.98)
             print(demList)
 
             # gdal_merge
-            cmd = "gdalbuildvrt -srcnodata 0 -vrtnodata 0 -separate " + path_to_data + "/VNPIMG"+vnp02_name.split('.')[1]+vnp02_name.split('.')[2]+".vrt " + demList
+            cmd = "gdalbuildvrt -srcnodata 0 -vrtnodata 0 -separate " + path_to_data + "/VNPIMG" + \
+                  vnp02_name.split('.')[1] + vnp02_name.split('.')[2] + ".vrt " + demList
             subprocess.call(cmd.split())
 
-            cmd = "gdal_translate " + path_to_data + "/VNPIMG"+vnp02_name.split('.')[1]+vnp02_name.split('.')[2]+".vrt " + path_to_geotiff +"/VNPIMG"+vnp02_name.split('.')[1]+vnp02_name.split('.')[2]+".tif"
+            cmd = "gdal_translate " + path_to_data + "/VNPIMG" + vnp02_name.split('.')[1] + vnp02_name.split('.')[
+                2] + ".vrt " + path_to_geotiff_day + "/VNPIMG" + vnp02_name.split('.')[1] + vnp02_name.split('.')[
+                      2] + ".tif"
             subprocess.call(cmd.split())
 
         except:
@@ -145,7 +154,7 @@ roi=(-124.48, 32.54, -114.06, 41.98)
                 subprocess.call(cmd.split())
 
                 cmd = "gdal_translate " + path_to_data + "/VNPIMG" + vnp02_name.split('.')[1] + vnp02_name.split('.')[
-                    2] + ".vrt " + path_to_geotiff + "/VNPIMG" + vnp02_name.split('.')[1] + vnp02_name.split('.')[
+                    2] + ".vrt " + path_to_geotiff_night + "/VNPIMG" + vnp02_name.split('.')[1] + vnp02_name.split('.')[
                           2] + ".tif"
                 subprocess.call(cmd.split())
 
