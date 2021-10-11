@@ -1,5 +1,7 @@
 import os
 import shutil
+import datetime
+
 from satpy.scene import Scene
 from satpy import find_files_and_readers
 from pyresample import create_area_def
@@ -13,26 +15,37 @@ import argparse
 if __name__=='__main__':
     parser = argparse.ArgumentParser(description='assign processing date')
     parser.add_argument('--date', '-d', type=str, help='assign processing date')
-    parser.add_argument('--time', '-t', type=str, help='assign processing time')
     args = parser.parse_args()
 
     date_path = 'data/VNPL1'
     save_path = 'data/VNPIMGTIF'
-roi=(-124.48, 32.54, -114.06, 41.98)
-    date = args.date
-    time = args.time
-    ladsweb_link_vnp02 = 'https://ladsweb.modaps.eosdis.nasa.gov/archive/allData/5110/VNP02IMG/2021/'
-    ladsweb_link_vnp03 = 'https://ladsweb.modaps.eosdis.nasa.gov/archive/allData/5110/VNP03IMG/2021/'
-    if not os.path.exists(date_path+'/'+date + '/'+date+'.json'):
-        my_headers = {'Authorization': 'Bearer emhhb3l1dGltOmVtaGhiM2wxZEdsdFFHZHRZV2xzTG1OdmJRPT06MTYzMzA3NzUzNDo0ZDNlN2I1NmJlNDc3MGM4N2Q5YmVkNDljMzcyMjUzYmMzMzhhMzMw'}
-        response_vnp02 = requests.get(ladsweb_link_vnp02+date+'.json', headers=my_headers)
-        response_vnp03 = requests.get(ladsweb_link_vnp03 + date + '.json', headers=my_headers)
+    roi=(-124.48, 32.54, -114.06, 41.98)
 
-        if not os.path.exists(date_path+'/'+date):
-            os.mkdir(date_path+'/'+date)
+    date_ndays = args.date
+    year = '2021'
+    date = datetime.datetime.strptime(year + '-01-01', '%Y-%m-%d') + datetime.timedelta(int(date_ndays))
+
+    if not os.path.exists(date_path+'/'+date.strftime('%Y-%m-%d') + '/'+date.strftime('%Y-%m-%d')+'.json'):
+        # Query server with roi
+        ladsweb_link_vnp02 = 'https://ladsweb.modaps.eosdis.nasa.gov/api/v1/files/product=VNP02IMG&collection=5200&dateRanges=' + (date - datetime.timedelta(1)).strftime(
+            '%Y-%m-%d' + '..' + date.strftime(
+            '%Y-%m-%d')) + '&areaOfInterest=x-129.5y56.2,x-110.4y31.7'
+        ladsweb_link_vnp03 = 'https://ladsweb.modaps.eosdis.nasa.gov/api/v1/files/product=VNP03IMG&collection=5200&dateRanges=' + (date - datetime.timedelta(1)).strftime(
+            '%Y-%m-%d' + '..' + date.strftime(
+            '%Y-%m-%d')) + '&areaOfInterest=x-129.5y56.2,x-110.4y31.7'
+
+        my_headers = {
+            "X-Requested-With": "XMLHttpRequest",
+            'Authorization': 'Bearer emhhb3l1dGltOmVtaGhiM2wxZEdsdFFHZHRZV2xzTG1OdmJRPT06MTYzMzk0NzU0NTphZmRlYWY2MjE2ODg0MjQ5MTEzNmE3MTE4MzZkOWYxYjg3MWQzNWMz'}
+
+        response_vnp02 = requests.get(ladsweb_link_vnp02, headers=my_headers)
+        response_vnp03 = requests.get(ladsweb_link_vnp03, headers=my_headers)
+        date = date.strftime('%Y-%m-%d')
+        if not os.path.exists(date_path + '/' + date):
+            os.mkdir(date_path + '/' + date)
         if not os.path.exists(save_path + '/' + date):
-            os.mkdir(save_path+'/'+date)
-        with open(date_path+'/'+date + '/'+date+'_vnp02.json', 'wb') as outf:
+            os.mkdir(save_path + '/' + date)
+        with open(date_path + '/' + date + '/' + date + '_vnp02.json', 'wb') as outf:
             outf.write(response_vnp02.content)
         with open(date_path + '/' + date + '/' + date + '_vnp03.json', 'wb') as outf:
             outf.write(response_vnp03.content)
@@ -45,14 +58,15 @@ roi=(-124.48, 32.54, -114.06, 41.98)
 
     vnp03_json = open(date_path+'/'+date + '/'+date+'_vnp03.json', )
     vnp03_list = json.load(vnp03_json)
+    download_link_vnp02 = 'https://ladsweb.modaps.eosdis.nasa.gov/archive/allData/5200/VNP02IMG/'+year+'/'
+    download_link_vnp03 = 'https://ladsweb.modaps.eosdis.nasa.gov/archive/allData/5200/VNP03IMG/'+year+'/'
     for (vnp02_file, vnp03_file) in zip(vnp02_list, vnp03_list):
+        vnp02_file = vnp02_list[vnp02_file]
+        vnp03_file = vnp03_list[vnp03_file]
 
         vnp02_name = vnp02_file['name']
         vnp03_name = vnp03_file['name']
-        vnp02_create_time = vnp02_file['last-modified']
         time_captured = vnp02_name.split('.')[2]
-        if int(time_captured) != int(time):
-            continue
         path_to_data = date_path + '/' + date + '/' + time_captured
         path_to_geotiff = save_path + '/' + date + '/' + time_captured
 
@@ -64,8 +78,8 @@ roi=(-124.48, 32.54, -114.06, 41.98)
             continue
 
         print(time_captured)
-        vnp02_link = ladsweb_link_vnp02 + date + '/' + vnp02_name
-        vnp03_link = ladsweb_link_vnp03 + date + '/' + vnp03_name
+        vnp02_link = download_link_vnp02 + date_ndays + '/' + vnp02_name
+        vnp03_link = download_link_vnp03 + date_ndays + '/' + vnp03_name
         # Keep a clean directory before downloading
         if not os.path.exists(date_path + '/' + date + '/' + time_captured):
             os.mkdir(date_path + '/' + date + '/' + time_captured)
@@ -90,9 +104,9 @@ roi=(-124.48, 32.54, -114.06, 41.98)
             new_scn = scn.resample(destination=area)
             # compositor = GenericCompositor("overview")
             # composite = compositor([new_scn['I01'],new_scn['I02'],new_scn['I03'],new_scn['I04'],new_scn['I05']])
-            scene_llbox = new_scn.crop(xy_bbox=roi)
+            # scene_llbox = new_scn.crop(xy_bbox=roi)
 
-            scene_llbox.save_datasets(
+            new_scn.save_datasets(
                 writer='geotiff', dtype=np.float32, enhance=False,
                 filename='{name}_{start_time:%Y%m%d_%H%M%S}.tif',
                 datasets=['I01', 'I02', 'I03', 'I04', 'I05'],
@@ -125,9 +139,9 @@ roi=(-124.48, 32.54, -114.06, 41.98)
                 # compositor = GenericCompositor("overview")
                 # composite = compositor([new_scn['I01'],new_scn['I02'],new_scn['I03'],new_scn['I04'],new_scn['I05']])
 
-                scene_llbox = new_scn.crop(xy_bbox=roi)
+                # scene_llbox = new_scn.crop(xy_bbox=roi)
 
-                scene_llbox.save_datasets(
+                new_scn.save_datasets(
                     writer='geotiff', dtype=np.float32, enhance=False,
                     filename='{name}_{start_time:%Y%m%d_%H%M%S}.tif',
                     datasets=['I04', 'I05'],
