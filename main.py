@@ -1,6 +1,7 @@
 import os
 import shutil
 import datetime
+from pprint import pprint
 
 from satpy.scene import Scene
 from satpy import find_files_and_readers
@@ -23,16 +24,14 @@ if __name__=='__main__':
 
     date_ndays = args.date
     year = '2021'
-    date = datetime.datetime.strptime(year + '-01-01', '%Y-%m-%d') + datetime.timedelta(int(date_ndays))
+    date = datetime.datetime.strptime(year + '-01-01', '%Y-%m-%d') + datetime.timedelta(int(date_ndays)-1)
 
     if not os.path.exists(date_path+'/'+date.strftime('%Y-%m-%d') + '/'+date.strftime('%Y-%m-%d')+'.json'):
         # Query server with roi
-        ladsweb_link_vnp02 = 'https://ladsweb.modaps.eosdis.nasa.gov/api/v1/files/product=VNP02IMG&collection=5200&dateRanges=' + (date - datetime.timedelta(1)).strftime(
-            '%Y-%m-%d' + '..' + date.strftime(
-            '%Y-%m-%d')) + '&areaOfInterest=x-129.5y56.2,x-110.4y31.7'
-        ladsweb_link_vnp03 = 'https://ladsweb.modaps.eosdis.nasa.gov/api/v1/files/product=VNP03IMG&collection=5200&dateRanges=' + (date - datetime.timedelta(1)).strftime(
-            '%Y-%m-%d' + '..' + date.strftime(
-            '%Y-%m-%d')) + '&areaOfInterest=x-129.5y56.2,x-110.4y31.7'
+        ladsweb_link_vnp02 = 'https://ladsweb.modaps.eosdis.nasa.gov/api/v1/files/product=VNP02IMG&collection=5200&dateRanges=' + date.strftime(
+            '%Y-%m-%d') + '&areaOfInterest=x-129.5y56.2,x-110.4y31.7'
+        ladsweb_link_vnp03 = 'https://ladsweb.modaps.eosdis.nasa.gov/api/v1/files/product=VNP03IMG&collection=5200&dateRanges=' + date.strftime(
+            '%Y-%m-%d') + '&areaOfInterest=x-129.5y56.2,x-110.4y31.7'
 
         my_headers = {
             "X-Requested-With": "XMLHttpRequest",
@@ -55,11 +54,13 @@ if __name__=='__main__':
         print('The file list has already been downloaded')
     vnp02_json = open(date_path+'/'+date + '/'+date+'_vnp02.json', )
     vnp02_list = json.load(vnp02_json)
+    pprint(vnp02_list)
 
     vnp03_json = open(date_path+'/'+date + '/'+date+'_vnp03.json', )
     vnp03_list = json.load(vnp03_json)
     download_link_vnp02 = 'https://ladsweb.modaps.eosdis.nasa.gov/archive/allData/5200/VNP02IMG/'+year+'/'
     download_link_vnp03 = 'https://ladsweb.modaps.eosdis.nasa.gov/archive/allData/5200/VNP03IMG/'+year+'/'
+    print('There are '+ str(vnp03_list.__len__()) +' files in total.')
     for (vnp02_file, vnp03_file) in zip(vnp02_list, vnp03_list):
         vnp02_file = vnp02_list[vnp02_file]
         vnp03_file = vnp03_list[vnp03_file]
@@ -88,8 +89,8 @@ if __name__=='__main__':
         if not os.path.exists(date_path+'/'+date + '/' + time_captured+'/'+vnp02_name) or not os.path.exists(date_path+'/'+date + '/' + time_captured+'/'+vnp03_name):
             print("Downloading netCDF files " + vnp02_name.split('.')[1] + vnp02_name.split('.')[2] + " from Remote server")
             shutil.rmtree(date_path+'/'+date + '/' + time_captured)
-            wget_command_vnp02 = "wget " + vnp02_link + " --header \"Authorization: Bearer emhhb3l1dGltOmVtaGhiM2wxZEdsdFFHZHRZV2xzTG1OdmJRPT06MTYzMjkzNjUyNjpmMDhhZTI4YzZmODZhNmY1ZjM4NWYwYjY5ODVjNzMxMDIyNTZiMjFl\" -P " + date_path+'/'+date + '/' + time_captured
-            wget_command_vnp03 = "wget " + vnp03_link + " --header \"Authorization: Bearer emhhb3l1dGltOmVtaGhiM2wxZEdsdFFHZHRZV2xzTG1OdmJRPT06MTYzMjkzNjUyNjpmMDhhZTI4YzZmODZhNmY1ZjM4NWYwYjY5ODVjNzMxMDIyNTZiMjFl\" -P " + date_path+'/'+date + '/' + time_captured
+            wget_command_vnp02 = "wget " + vnp02_link + " --header \"Authorization: Bearer emhhb3l1dGltOmVtaGhiM2wxZEdsdFFHZHRZV2xzTG1OdmJRPT06MTYzMzk2ODc2ODpmYjFmNGVkNzNkNWI0NGU3MGE1YzMyODExYmNhNGU0Njg3NzBjMGZj\" -P " + date_path+'/'+date + '/' + time_captured
+            wget_command_vnp03 = "wget " + vnp03_link + " --header \"Authorization: Bearer emhhb3l1dGltOmVtaGhiM2wxZEdsdFFHZHRZV2xzTG1OdmJRPT06MTYzMzk2ODc2ODpmYjFmNGVkNzNkNWI0NGU3MGE1YzMyODExYmNhNGU0Njg3NzBjMGZj\" -P " + date_path+'/'+date + '/' + time_captured
             os.system(wget_command_vnp02)
             os.system(wget_command_vnp03)
 
@@ -164,4 +165,6 @@ if __name__=='__main__':
                 subprocess.call(cmd.split())
 
             except:
+                print('fail to create image')
                 pass
+ 
