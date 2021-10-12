@@ -89,17 +89,17 @@ class Pipeline:
     def get_time_start(self, date_string):
         year = date_string[:4]
         day = datetime.date.fromisoformat(year + '-01-01') + datetime.timedelta(days=int(date_string[4:7]) - 1)
-        hour = date_string[7:9]
-        min = date_string[9:]
+        hour = date_string[11:13]
+        min = date_string[13:]
         return str(day) + 'T' + hour + ':' + min + ':' + '00'
 
     def upload_to_gee(self, dir_tif='../data/cogtif'):
-        file_list = glob.glob('dir_tif+/*/*/*.tif')
+        file_list = glob.glob(dir_tif+'/*/*.tif')
         for file in file_list:
             date = file.split('/')[-2]
             file_name = file.split('/')[-1]
             time = file_name[-8:-4]
-            time_start = self.get_time_start(file_name[7:-4])
+            time_start = self.get_time_start(file_name[6:-4])
             if int(time) <= 1200:
                 cmd = 'earthengine upload image --time_start ' + time_start + ' --asset_id=projects/grand-drive-285514/assets/viirs_night/' + \
                       file.split('\\')[-1][
@@ -115,7 +115,7 @@ class Pipeline:
         print("Start Projection Locally")
         # self.read_and_projection(date)
         print("Start uploading to the cloud")
-        self.upload_to_gcloud(date, dir_data.replace('VNPL1', 'VNPIMGTIF'))
+        # self.upload_to_gcloud(date, dir_data.replace('VNPL1', 'VNPIMGTIF'))
         self.upload_to_gee()
 
 
