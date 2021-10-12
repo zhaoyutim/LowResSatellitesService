@@ -32,7 +32,8 @@ if __name__=='__main__':
             '%Y-%m-%d') + '&areaOfInterest=x-129.5y56.2,x-110.4y31.7'
         ladsweb_link_vnp03 = 'https://ladsweb.modaps.eosdis.nasa.gov/api/v1/files/product=VNP03IMG&collection=5200&dateRanges=' + date.strftime(
             '%Y-%m-%d') + '&areaOfInterest=x-129.5y56.2,x-110.4y31.7'
-
+        # 'https://ladsweb.modaps.eosdis.nasa.gov/api/v1/files/product=VNP02IMG&collection=5200&dateRanges=2021-07-14&areaOfInterest=x-129.5y56.2,x-110.4y31.7'
+        # 'https://ladsweb.modaps.eosdis.nasa.gov/api/v1/files/product=VNP02IMG&collection=5200&dateRanges=2021-07-14&areaOfInterest=x-129.5y56.2,x-110.4y31.7'
         my_headers = {
             "X-Requested-With": "XMLHttpRequest",
             'Authorization': 'Bearer emhhb3l1dGltOmVtaGhiM2wxZEdsdFFHZHRZV2xzTG1OdmJRPT06MTYzMzk0NzU0NTphZmRlYWY2MjE2ODg0MjQ5MTEzNmE3MTE4MzZkOWYxYjg3MWQzNWMz'}
