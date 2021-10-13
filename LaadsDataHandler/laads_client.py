@@ -16,7 +16,7 @@ class LaadsClient:
             "X-Requested-With": "XMLHttpRequest",
             'Authorization': 'Bearer emhhb3l1dGltOmVtaGhiM2wxZEdsdFFHZHRZV2xzTG1OdmJRPT06MTYzMzk0NzU0NTphZmRlYWY2MjE2ODg0MjQ5MTEzNmE3MTE4MzZkOWYxYjg3MWQzNWMz'}
 
-    def query_filelist_with_date_range_and_area_of_interest(self, date, data_path='../data/VNPL1', collection_id='5200', area_of_interest='x-129.5y56.2,x-110.4y31.7'):
+    def query_filelist_with_date_range_and_area_of_interest(self, date, data_path='data/VNPL1', collection_id='5200', area_of_interest='x-129.5y56.2,x-110.4y31.7'):
         products_id = ['VNP02IMG', 'VNP03IMG']
         for i in range(2):
             product_id = products_id[i]
@@ -36,7 +36,7 @@ class LaadsClient:
                     outf.write(response.content)
                 print('New ' + product_id +' file list for day '+date+' created')
 
-    def download_files_to_local_based_on_filelist(self, date, data_path='../data/VNPL1'):
+    def download_files_to_local_based_on_filelist(self, date, data_path='data/VNPL1'):
         products_id = ['VNP02IMG', 'VNP03IMG']
 
         date_ndays = (datetime.datetime.strptime(date, '%Y-%m-%d')-datetime.datetime.strptime(date[:4]+'-01-01', '%Y-%m-%d')).days+1
@@ -56,6 +56,9 @@ class LaadsClient:
                 path_to_geotiff_day = save_path + '/' + date + '/' + time_captured + '_D'
                 path_to_geotiff_night = save_path + '/' + date + '/' + time_captured + '_N'
 
+                if not os.path.exists(save_path + '/' + date):
+                    os.mkdir(save_path + '/' + date)
+
                 if not os.path.exists(save_path + '/' + date + '/' + time_captured):
                     os.mkdir(save_path + '/' + date + '/' + time_captured)
 
@@ -73,7 +76,7 @@ class LaadsClient:
                     os.system(wget_command_vnp)
 
 if __name__ == '__main__':
-    date = '2021-07-14'
+    date = '2020-08-08'
     laads_client = LaadsClient()
     laads_client.query_filelist_with_date_range_and_area_of_interest(date)
     laads_client.download_files_to_local_based_on_filelist(date)
