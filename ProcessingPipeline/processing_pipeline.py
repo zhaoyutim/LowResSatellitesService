@@ -20,7 +20,7 @@ class Pipeline:
     def read_and_projection(self, date, dir_data='data/VNPL1'):
         dir_list = glob.glob(dir_data+'/'+date+'/*/')
         for dir_nc in dir_list:
-            dir_nc.replace('\\', '/')
+            dir_nc = dir_nc.replace('\\', '/')
             if len(glob.glob(dir_nc+'/*.nc'))!=2:
                 print('Current download not complete')
                 continue
@@ -94,8 +94,10 @@ class Pipeline:
         file_name = file.split('/')[-1]
         storage_client = storage.Client()
         bucket = storage_client.bucket('ai4wildfire')
-        if not storage.Blob(bucket=bucket, name='VNPIMGTIF/2021' + date + '/' + file_name).exists(storage_client):
-            upload_cmd = 'gsutil cp data/cogtif/' + date + '/' + file_name + ' gs://ai4wildfire/' + 'VNPIMGTIF/2021' + date + '/' + file_name
+        year = date[:4]
+        if not storage.Blob(bucket=bucket, name='VNPIMGTIF/'+year + date + '/' + file_name).exists(storage_client):
+            upload_cmd = 'gsutil cp data/cogtif/' + date + '/' + file_name + ' gs://ai4wildfire/' + 'VNPIMGTIF/'+year + date + '/' + file_name
+            print(upload_cmd)
             os.system(upload_cmd)
             print('finish uploading' + file)
         else:
@@ -104,17 +106,18 @@ class Pipeline:
     def upload_to_gee(self, date, file):
         print('start uploading to gee')
         time = file.split('/')[-2]
+        year = date[:4]
         file_name = file.split('/')[-1]
         time_start = date + 'T' + time[:2] + ':' + time[2:] + ':00'
         if int(time) <= 1200:
             cmd = 'earthengine upload image --time_start ' + time_start + ' --asset_id=projects/grand-drive-285514/assets/viirs_night/' + \
                   file.split('/')[-1][
-                  :-4] + ' --pyramiding_policy=sample gs://ai4wildfire/' + 'VNPIMGTIF/2021' + date + '/' + file_name
+                  :-4] + ' --pyramiding_policy=sample gs://ai4wildfire/' + 'VNPIMGTIF/'+year + date + '/' + file_name
             subprocess.call(cmd.split())
         else:
             cmd = 'earthengine upload image --time_start ' + time_start + ' --asset_id=projects/grand-drive-285514/assets/viirs_day/' + \
                   file.split('/')[-1][
-                  :-4] + ' --pyramiding_policy=sample gs://ai4wildfire/' + 'VNPIMGTIF/2021' + date + '/' + file_name
+                  :-4] + ' --pyramiding_policy=sample gs://ai4wildfire/' + 'VNPIMGTIF/'+year + date + '/' + file_name
             subprocess.call(cmd.split())
         print('Uploading in progress for image '+time_start)
 
