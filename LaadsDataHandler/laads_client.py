@@ -52,17 +52,6 @@ class LaadsClient:
 
                 vnp_name = vnp_file['name']
                 time_captured = vnp_name.split('.')[2]
-                save_path = data_path.replace('VNPL1', 'VNPIMGTIF')
-                path_to_geotiff_day = save_path + '/' + date + '/' + time_captured + '_D'
-                path_to_geotiff_night = save_path + '/' + date + '/' + time_captured + '_N'
-
-                if not os.path.exists(save_path + '/' + date):
-                    os.mkdir(save_path + '/' + date)
-
-                if not os.path.exists(save_path + '/' + date + '/' + time_captured):
-                    os.mkdir(save_path + '/' + date + '/' + time_captured)
-
-                print(time_captured)
                 vnp_link = download_link + str(date_ndays) + '/' + vnp_name
                 # Keep a clean directory before downloading
                 if not os.path.exists(data_path + '/' + date + '/' + time_captured):

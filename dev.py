@@ -4,7 +4,7 @@ from LaadsDataHandler.laads_client import LaadsClient
 from ProcessingPipeline.processing_pipeline import Pipeline
 
 if __name__ == '__main__':
-    start_date = '2020-08-09'
+    start_date = '2020-08-08'
     for i in range(5):
         date = (datetime.datetime.strptime(start_date, '%Y-%m-%d')+datetime.timedelta(i)).strftime('%Y-%m-%d')
         laads_client = LaadsClient()
