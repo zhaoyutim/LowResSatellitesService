@@ -4,6 +4,7 @@ import datetime
 from pprint import pprint
 
 from google.cloud import storage
+from osgeo import gdal
 from satpy.scene import Scene
 from satpy import find_files_and_readers
 from pyresample import create_area_def
@@ -13,12 +14,17 @@ import subprocess
 import requests
 import json
 import argparse
+
+from Preprocessing.PreprocessingService import PreprocessingService
+
+
 class Pipeline:
     def __init__(self):
         return
 
-    def read_and_projection(self, date, dir_data='data/VNPL1'):
+    def read_and_projection(self, date, roi, dir_data='data/VNPL1'):
         dir_list = glob.glob(dir_data+'/'+date+'/*/')
+        dir_list.sort()
         for dir_nc in dir_list:
             dir_nc = dir_nc.replace('\\', '/')
             if len(glob.glob(dir_nc+'/*.nc'))!=2:
@@ -29,8 +35,6 @@ class Pipeline:
             if not os.path.exists(save_path + '/' + date):
                 os.mkdir(save_path + '/' + date)
 
-            if not os.path.exists(save_path + '/' + date + '/' + time_captured):
-                os.mkdir(save_path + '/' + date + '/' + time_captured)
             print(time_captured)
             if os.path.exists('data/VNPIMGTIF/' + date + '/' +time_captured+ "/VNPIMG" + date +'-'+ time_captured + ".tif"):
                 print("The GEOTIFF for time " + date +'-'+ time_captured + " has been created!")
@@ -52,6 +56,8 @@ class Pipeline:
 
                 # scene_llbox = new_scn.crop(xy_bbox=roi)
 
+                if not os.path.exists(save_path + '/' + date + '/' + time_captured):
+                    os.mkdir(save_path + '/' + date + '/' + time_captured)
                 new_scn.save_datasets(
                     writer='geotiff', dtype=np.float32, enhance=False,
                     filename='{name}_{start_time:%Y%m%d_%H%M%S}.tif',
@@ -96,7 +102,7 @@ class Pipeline:
         bucket = storage_client.bucket('ai4wildfire')
         year = date[:4]
         if not storage.Blob(bucket=bucket, name='VNPIMGTIF/'+year + date + '/' + file_name).exists(storage_client):
-            upload_cmd = 'gsutil cp data/cogtif/' + date + '/' + file_name + ' gs://ai4wildfire/' + 'VNPIMGTIF/'+year + date + '/' + file_name
+            upload_cmd = 'gsutil cp ' + file + ' gs://ai4wildfire/' + 'VNPIMGTIF/'+year + date + '/' + file_name
             print(upload_cmd)
             os.system(upload_cmd)
             print('finish uploading' + file)
@@ -105,7 +111,7 @@ class Pipeline:
 
     def upload_to_gee(self, date, file):
         print('start uploading to gee')
-        time = file.split('/')[-2]
+        time = file.split('/')[-1][-8:-4]
         year = date[:4]
         file_name = file.split('/')[-1]
         time_start = date + 'T' + time[:2] + ':' + time[2:] + ':00'
@@ -121,15 +127,31 @@ class Pipeline:
             subprocess.call(cmd.split())
         print('Uploading in progress for image '+time_start)
 
-    def processing(self, date, dir_data='data/VNPL1', dir_tif='data/VNPIMGTIF'):
-        self.read_and_projection(date, dir_data)
-        file_list = glob.glob(dir_tif + '/' + date + '/*/*.tif')
+    def crop_to_roi(self, date, roi, file):
+        if not os.path.exists('data/cogsubset'):
+            os.mkdir('data/cogsubset')
+        if not os.path.exists('data/cogsubset/'+date):
+            os.mkdir('data/cogsubset/'+date)
+        cmd='gdalwarp -te ' + str(roi[0]) + ' ' + str(roi[1]) + ' ' + str(roi[2]) + ' ' + str(roi[3]) + ' ' + file + ' ' + file.replace('cogtif','cogsubset')
+        print(cmd)
+        os.system(cmd)
+        if os.path.getsize(file.replace('cogtif','cogsubset')) <= 50*1000*1000:
+            os.remove(file.replace('cogtif','cogsubset'))
+            print('blank image smaller than 50mb, delete')
+
+    def processing(self, date, roi, dir_data='data/VNPL1', dir_tif='data/VNPIMGTIF'):
+        # self.read_and_projection(date, roi, dir_data)
+        # file_list = glob.glob(dir_tif + '/' + date + '/*/*.tif')
+        # file_list.sort()
+        # for file in file_list:
+        #     file = file.replace('\\', '/')
+        #     self.cloud_optimization(date, file)
+        #     self.crop_to_roi(date, roi, 'data/cogtif/'+date+'/'+file.split('/')[-1])
+        #     self.upload_to_gcloud(date, 'data/cogsubset/'+date+'/'+file.split('/')[-1])
+        file_list = glob.glob(dir_tif.replace('VNPIMGTIF', 'cogsubset') + '/' + date + '/*.tif')
         file_list.sort()
         for file in file_list:
-            file = file.replace('\\', '/')
-            self.cloud_optimization(date, file)
-            self.upload_to_gcloud(date, file)
-            self.upload_to_gee(date,file)
+            self.upload_to_gee(date, file)
 
 
 
