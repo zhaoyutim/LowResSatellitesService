@@ -116,12 +116,12 @@ class Pipeline:
         file_name = file.split('/')[-1]
         time_start = date + 'T' + time[:2] + ':' + time[2:] + ':00'
         if int(time) <= 1200:
-            cmd = 'earthengine upload image --time_start ' + time_start + ' --asset_id=projects/grand-drive-285514/assets/viirs_night/' + \
+            cmd = 'earthengine upload image --time_start ' + time_start + ' --asset_id=projects/grand-drive-285514/assets/lytton_day/' + \
                   file.split('/')[-1][
                   :-4] + ' --pyramiding_policy=sample gs://ai4wildfire/' + 'VNPIMGTIF/'+year + date + '/' + file_name
             subprocess.call(cmd.split())
         else:
-            cmd = 'earthengine upload image --time_start ' + time_start + ' --asset_id=projects/grand-drive-285514/assets/viirs_day/' + \
+            cmd = 'earthengine upload image --time_start ' + time_start + ' --asset_id=projects/grand-drive-285514/assets/lytton_night/' + \
                   file.split('/')[-1][
                   :-4] + ' --pyramiding_policy=sample gs://ai4wildfire/' + 'VNPIMGTIF/'+year + date + '/' + file_name
             subprocess.call(cmd.split())
@@ -135,22 +135,23 @@ class Pipeline:
         cmd='gdalwarp -te ' + str(roi[0]) + ' ' + str(roi[1]) + ' ' + str(roi[2]) + ' ' + str(roi[3]) + ' ' + file + ' ' + file.replace('cogtif','cogsubset')
         print(cmd)
         os.system(cmd)
-        if os.path.getsize(file.replace('cogtif','cogsubset')) <= 50*1000*1000:
-            os.remove(file.replace('cogtif','cogsubset'))
-            print('blank image smaller than 50mb, delete')
+        # if os.path.getsize(file.replace('cogtif','cogsubset')) <= 50*1000*1000:
+        #     os.remove(file.replace('cogtif','cogsubset'))
+        #     print('blank image smaller than 50mb, delete')
 
     def processing(self, date, roi, dir_data='data/VNPL1', dir_tif='data/VNPIMGTIF'):
-        # self.read_and_projection(date, roi, dir_data)
-        # file_list = glob.glob(dir_tif + '/' + date + '/*/*.tif')
-        # file_list.sort()
-        # for file in file_list:
-        #     file = file.replace('\\', '/')
-        #     self.cloud_optimization(date, file)
-        #     self.crop_to_roi(date, roi, 'data/cogtif/'+date+'/'+file.split('/')[-1])
-        #     self.upload_to_gcloud(date, 'data/cogsubset/'+date+'/'+file.split('/')[-1])
+        self.read_and_projection(date, roi, dir_data)
+        file_list = glob.glob(dir_tif + '/' + date + '/*/*.tif')
+        file_list.sort()
+        for file in file_list:
+            file = file.replace('\\', '/')
+            self.cloud_optimization(date, file)
+            self.crop_to_roi(date, roi, 'data/cogtif/'+date+'/'+file.split('/')[-1])
+            self.upload_to_gcloud(date, 'data/cogsubset/'+date+'/'+file.split('/')[-1])
         file_list = glob.glob(dir_tif.replace('VNPIMGTIF', 'cogsubset') + '/' + date + '/*.tif')
         file_list.sort()
         for file in file_list:
+            file = file.replace('\\', '/')
             self.upload_to_gee(date, file)
 
 
