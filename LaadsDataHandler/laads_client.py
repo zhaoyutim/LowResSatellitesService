@@ -14,14 +14,14 @@ class LaadsClient:
             "X-Requested-With": "XMLHttpRequest",
             'Authorization': 'Bearer emhhb3l1dGltOmVtaGhiM2wxZEdsdFFHZHRZV2xzTG1OdmJRPT06MTYzMzk0NzU0NTphZmRlYWY2MjE2ODg0MjQ5MTEzNmE3MTE4MzZkOWYxYjg3MWQzNWMz'}
 
-    def query_filelist_with_date_range_and_area_of_interest(self, date, data_path='data/VNPL1', collection_id='5200', area_of_interest='W-129 N56.2 E-110.4 S31.7'):
+    def query_filelist_with_date_range_and_area_of_interest(self, date, data_path='data/VNPL1', collection_id='5201', area_of_interest='W-129 N56.2 E-110.4 S31.7'):
         products_id = ['VNP02IMG', 'VNP03IMG']
         for i in range(2):
             product_id = products_id[i]
             download_link = self.laads_query_api_link\
                             + '?products='+product_id\
                             + '&collections='+collection_id\
-                            + '&archiveSets=5200' \
+                            + '&archiveSets='+collection_id \
                             + '&temporalRanges=' + date \
                             + '&regions=[BBOX]' + area_of_interest
 
@@ -49,7 +49,7 @@ class LaadsClient:
                 vnp_name = vnp_file['name']
 
                 time_captured = vnp_name.split('.')[2]
-                vnp_link = self.download_base_link + vnp_file['downloadsLink']
+                vnp_link = vnp_file['downloadsLink']
                 # Keep a clean directory before downloading
                 if not os.path.exists(data_path + '/' + date + '/' + time_captured):
                     os.mkdir(data_path + '/' + date + '/' + time_captured)

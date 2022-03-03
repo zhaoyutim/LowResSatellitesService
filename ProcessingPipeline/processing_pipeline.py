@@ -116,12 +116,12 @@ class Pipeline:
         file_name = file.split('/')[-1]
         time_start = date + 'T' + time[:2] + ':' + time[2:] + ':00'
         if int(time) <= 1200:
-            cmd = 'earthengine upload image --time_start ' + time_start + ' --asset_id=projects/grand-drive-285514/assets/lytton_day/' + \
+            cmd = 'earthengine upload image --time_start ' + time_start + ' --asset_id=projects/grand-drive-285514/assets/proj3_test_night/' + \
                   file.split('/')[-1][
                   :-4] + ' --pyramiding_policy=sample gs://ai4wildfire/' + 'VNPIMGTIF/'+year + date + '/' + file_name
             subprocess.call(cmd.split())
         else:
-            cmd = 'earthengine upload image --time_start ' + time_start + ' --asset_id=projects/grand-drive-285514/assets/lytton_night/' + \
+            cmd = 'earthengine upload image --time_start ' + time_start + ' --asset_id=projects/grand-drive-285514/assets/proj3_test_day/' + \
                   file.split('/')[-1][
                   :-4] + ' --pyramiding_policy=sample gs://ai4wildfire/' + 'VNPIMGTIF/'+year + date + '/' + file_name
             subprocess.call(cmd.split())

@@ -132,7 +132,7 @@ chuckegg_creek_fire:
   longitude: -117.42
   latitude: 58.38
   start: 2019-05-15
-  end: 2019-05-22
+  end: 2019-05-25
 
 mexico_fire:
   longitude: -102.73
@@ -245,7 +245,7 @@ tubbs_fire:
 carr_fire:
   longitude: -122.62
   latitude: 40.65
-  start: 2018-07-23
+  start: 2018-07-30
   end: 2018-07-25
 
 magee_fire:
@@ -264,7 +264,7 @@ eagle_bluff_fire:
   longitude: -119.50
   latitude: 49.42
   start: 2019-08-05
-  end: 2019-08-10
+  end: 2019-08-15
 
 tagish_lake_fire:
   longitude: -134.35
@@ -311,3 +311,20 @@ N51227:
   end: 2020-08-30
   firms_time: 2020-08-17T20:45
 
+sparks_lake_fire:
+  longitude: -120.79
+  latitude: 50.92
+  start: 2021-06-28
+  end: 2021-08-30
+
+kincade_fire:
+  longitude: -122.78
+  latitude: 38.79
+  start: 2019-10-23
+  end: 2019-11-06
+
+walker_fire:
+  longitude: -120.68
+  latitude: 40.06
+  start: 2019-09-04
+  end: 2019-10-24
