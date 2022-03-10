@@ -40,47 +40,44 @@ class Pipeline:
                 print("The GEOTIFF for time " + date +'-'+ time_captured + " has been created!")
                 continue
             #TODO find a way to divide day night images
-            if int(time_captured)>1200:
+            if int(time_captured)>800 and int(time_captured)<1800:
                 list_of_bands = ['I01', 'I02', 'I03', 'I04', 'I05', 'i_lat', 'i_lon']
             else:
                 list_of_bands = ['I04', 'I05', 'i_lat', 'i_lon']
-            try:
-                files = find_files_and_readers(base_dir=dir_nc, reader='viirs_l1b')
-                scn = Scene(filenames=files)
-                scn.load(list_of_bands)
+            # list_of_bands = ['I01', 'I02', 'I03', 'I04', 'I05', 'i_lat', 'i_lon']
+            files = find_files_and_readers(base_dir=dir_nc, reader='viirs_l1b')
+            scn = Scene(filenames=files)
+            scn.load(list_of_bands)
 
-                lon = scn['i_lon'].values
-                lat = scn['i_lat'].values
-                area = create_area_def(area_id="area", projection='WGS84', shape=(lat.shape[1], lat.shape[0]), lon=lon, lat=lat)
-                new_scn = scn.resample(destination=area)
+            lon = scn['i_lon'].values
+            lat = scn['i_lat'].values
+            area = create_area_def(area_id="area", projection='WGS84', shape=(lat.shape[1], lat.shape[0]), lon=lon, lat=lat)
+            new_scn = scn.resample(destination=area)
 
-                # scene_llbox = new_scn.crop(xy_bbox=roi)
+            # scene_llbox = new_scn.crop(xy_bbox=roi)
 
-                if not os.path.exists(save_path + '/' + date + '/' + time_captured):
-                    os.mkdir(save_path + '/' + date + '/' + time_captured)
-                new_scn.save_datasets(
-                    writer='geotiff', dtype=np.float32, enhance=False,
-                    filename='{name}_{start_time:%Y%m%d_%H%M%S}.tif',
-                    datasets=list_of_bands[:-2],
-                    base_dir=dir_nc)
+            if not os.path.exists(save_path + '/' + date + '/' + time_captured):
+                os.mkdir(save_path + '/' + date + '/' + time_captured)
+            new_scn.save_datasets(
+                writer='geotiff', dtype=np.float32, enhance=False,
+                filename='{name}_{start_time:%Y%m%d_%H%M%S}.tif',
+                datasets=list_of_bands[:-2],
+                base_dir=dir_nc)
 
-                demList = glob.glob(dir_nc + "/I[0-9]*_[0-9]*_[0-9]*.tif")
-                demList.sort()
-                demList = ' '.join(map(str, demList))
-                print(demList)
+            demList = glob.glob(dir_nc + "/I[0-9]*_[0-9]*_[0-9]*.tif")
+            demList.sort()
+            demList = ' '.join(map(str, demList))
+            print(demList)
 
-                # gdal_merge
-                cmd = "gdalbuildvrt -srcnodata 0 -vrtnodata 0 -separate " + dir_nc + "/VNPIMG" + \
-                      date +'-'+ time_captured + ".vrt " + demList
-                subprocess.call(cmd.split())
+            # gdal_merge
+            cmd = "gdalbuildvrt -srcnodata 0 -vrtnodata 0 -separate " + dir_nc + "/VNPIMG" + \
+                  date +'-'+ time_captured + ".vrt " + demList
+            subprocess.call(cmd.split())
 
-                cmd = "gdal_translate " + dir_nc + "/VNPIMG" + \
-                      date +'-'+ time_captured + ".vrt " + dir_nc.replace('VNPL1', 'VNPIMGTIF') + "/VNPIMG" + \
-                      date +'-'+ time_captured + ".tif"
-                subprocess.call(cmd.split())
-            except:
-                print('Fail to generate GEOTIFF for '+date+'-'+time_captured)
-                pass
+            cmd = "gdal_translate " + dir_nc + "/VNPIMG" + \
+                  date +'-'+ time_captured + ".vrt " + dir_nc.replace('VNPL1', 'VNPIMGTIF') + "/VNPIMG" + \
+                  date +'-'+ time_captured + ".tif"
+            subprocess.call(cmd.split())
 
     def cloud_optimization(self, date, file):
         file_name = file.split('/')[-1]
@@ -101,13 +98,13 @@ class Pipeline:
         storage_client = storage.Client()
         bucket = storage_client.bucket('ai4wildfire')
         year = date[:4]
-        if not storage.Blob(bucket=bucket, name='VNPIMGTIF/'+year + date + '/' + file_name).exists(storage_client):
-            upload_cmd = 'gsutil cp ' + file + ' gs://ai4wildfire/' + 'VNPIMGTIF/'+year + date + '/' + file_name
-            print(upload_cmd)
-            os.system(upload_cmd)
-            print('finish uploading' + file)
-        else:
-            print('file exist already')
+        # if not storage.Blob(bucket=bucket, name='VNPIMGTIF/'+year + date + '/' + file_name).exists(storage_client):
+        upload_cmd = 'gsutil cp ' + file + ' gs://ai4wildfire/' + 'VNPIMGTIF/'+year + date + '/' + file_name
+        print(upload_cmd)
+        os.system(upload_cmd)
+        print('finish uploading' + file)
+        # else:
+        #     print('file exist already')
 
     def upload_to_gee(self, date, file):
         print('start uploading to gee')
@@ -115,13 +112,13 @@ class Pipeline:
         year = date[:4]
         file_name = file.split('/')[-1]
         time_start = date + 'T' + time[:2] + ':' + time[2:] + ':00'
-        if int(time) <= 1200:
-            cmd = 'earthengine upload image --time_start ' + time_start + ' --asset_id=projects/grand-drive-285514/assets/proj3_test_night/' + \
+        if int(time)>800 and int(time)<1800:
+            cmd = 'earthengine upload image --time_start ' + time_start + ' --asset_id=projects/ee-zhaoyutim/assets/swedish_fire_day/' + \
                   file.split('/')[-1][
                   :-4] + ' --pyramiding_policy=sample gs://ai4wildfire/' + 'VNPIMGTIF/'+year + date + '/' + file_name
             subprocess.call(cmd.split())
         else:
-            cmd = 'earthengine upload image --time_start ' + time_start + ' --asset_id=projects/grand-drive-285514/assets/proj3_test_day/' + \
+            cmd = 'earthengine upload image --time_start ' + time_start + ' --asset_id=projects/ee-zhaoyutim/assets/swedish_fire_night/' + \
                   file.split('/')[-1][
                   :-4] + ' --pyramiding_policy=sample gs://ai4wildfire/' + 'VNPIMGTIF/'+year + date + '/' + file_name
             subprocess.call(cmd.split())
