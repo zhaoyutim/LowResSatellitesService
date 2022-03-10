@@ -1,6 +1,6 @@
 output_bucket: zhaoyutimtest
 
-rectangular_size: 0.5
+rectangular_size: 1
 
 LNU_lighting_complex:
   longitude: -122.237303
@@ -245,7 +245,7 @@ tubbs_fire:
 carr_fire:
   longitude: -122.62
   latitude: 40.65
-  start: 2018-07-30
+  start: 2018-07-23
   end: 2018-07-25
 
 magee_fire:
@@ -285,10 +285,16 @@ richter_mountain_fire:
   end: 2019-07-30
 
 Karbole_fire:
-  longitude: 15.13
-  latitude: 61.87
-  start: 2018-07-01
-  end: 2018-08-10
+  longitude: 14.45
+  latitude: 61.81
+  start: 2018-07-14
+  end: 2018-08-12
+
+Swedish_fire:
+  longitude: 13.19
+  latitude: 61.00
+  start: 2018-07-16
+  end: 2018-08-26
 
 N71114:
   longitude: -117.70
@@ -328,3 +334,15 @@ walker_fire:
   latitude: 40.06
   start: 2019-09-04
   end: 2019-10-24
+
+thomas_fire:
+  longitude: -119.09124
+  latitude: 34.41521
+  start: 2017-12-04
+  end: 2017-12-14
+
+sydney_fire:
+  longitude: 150.116
+  latitude: -35.50
+  start: 2019-11-25
+  end: 2019-12-06
