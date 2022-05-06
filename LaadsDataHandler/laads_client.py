@@ -14,7 +14,7 @@ class LaadsClient:
             "X-Requested-With": "XMLHttpRequest",
             'Authorization': 'Bearer emhhb3l1dGltOmVtaGhiM2wxZEdsdFFHZHRZV2xzTG1OdmJRPT06MTYzMzk0NzU0NTphZmRlYWY2MjE2ODg0MjQ5MTEzNmE3MTE4MzZkOWYxYjg3MWQzNWMz'}
 
-    def query_filelist_with_date_range_and_area_of_interest(self, date, data_path='data/VNPL1', collection_id='5201', area_of_interest='W-129 N56.2 E-110.4 S31.7'):
+    def query_filelist_with_date_range_and_area_of_interest(self, date, data_path='data/VNPL1', collection_id='5110', area_of_interest='W-129 N56.2 E-110.4 S31.7'):
         products_id = ['VNP02IMG', 'VNP03IMG']
         for i in range(2):
             product_id = products_id[i]
@@ -35,7 +35,7 @@ class LaadsClient:
                     outf.write(response.content)
                 print('New ' + product_id +' file list for day '+date+' created')
 
-    def download_files_to_local_based_on_filelist(self, date, data_path='data/VNPL1'):
+    def download_files_to_local_based_on_filelist(self, date, collection_id='5110', data_path='data/VNPL1'):
         products_id = ['VNP02IMG', 'VNP03IMG']
 
         date_ndays = (datetime.datetime.strptime(date, '%Y-%m-%d')-datetime.datetime.strptime(date[:4]+'-01-01', '%Y-%m-%d')).days+1
@@ -43,7 +43,7 @@ class LaadsClient:
             product_id = products_id[i]
             vnp_json = open(data_path + '/' + date + '/' + date + '_'+product_id+'.json', )
             vnp_list = json.load(vnp_json)['content']
-            vnp_list = [file for file in vnp_list if file['archiveSets']==5200]
+            vnp_list = [file for file in vnp_list if file['archiveSets']==int(collection_id)]
             print('There are ' + str(vnp_list.__len__()) + ' ' + product_id +' files to download in total.')
             for vnp_file in vnp_list:
                 vnp_name = vnp_file['name']

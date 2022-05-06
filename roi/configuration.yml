@@ -105,8 +105,8 @@ plateau_fire:
   end: 2017-07-30
 
 hanceville_fire:
-  longitude: -123.10
-  latitude: 51.56
+  longitude: -123.08
+  latitude: 51.98
   start: 2017-07-07
   end: 2017-07-30
 
@@ -328,3 +328,15 @@ walker_fire:
   latitude: 40.06
   start: 2019-09-04
   end: 2019-10-24
+
+thomas_fire:
+  longitude: -119.09
+  latitude: 34.42
+  start: 2017-04-12
+  end: 2017-04-22
+
+Africa:
+  longitude: 35.78
+  latitude: -17.66
+  start: 2022-05-04
+  end: 2022-05-06
