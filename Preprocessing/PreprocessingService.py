@@ -17,9 +17,9 @@ class PreprocessingService:
             red = vis_params.get("red_band")
             green = vis_params.get("green_band")
             blue = vis_params.get("blue_band")
-            composition[0, :, :] = input_arr[red, :, :]
-            composition[1, :, :] = input_arr[green, :, :]
-            composition[2, :, :] = input_arr[blue, :, :]
+            composition[0, :, :] = (input_arr[red, :, :]-input_arr[red, :, :].min())/(input_arr[red, :, :].max()-input_arr[red, :, :].min())
+            composition[1, :, :] = (input_arr[green, :, :]-input_arr[green, :, :].min())/(input_arr[green, :, :].max()-input_arr[green, :, :].min())
+            composition[2, :, :] = (input_arr[blue, :, :]-input_arr[blue, :, :].min())/(input_arr[blue, :, :].max()-input_arr[blue, :, :].min())
             return composition
 
     def padding(self, coarse_arr, array_to_be_downsampled):
