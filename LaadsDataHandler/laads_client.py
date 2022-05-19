@@ -34,35 +34,36 @@ class LaadsClient:
                     json_path = os.path.join(data_path, date, day_night)
                     if not os.path.exists(json_path):
                         os.makedirs(json_path)
-                    with open(os.path.join(json_path,date + '_'+product_id+'.json', 'wb')) as outf:
+                    with open(os.path.join(json_path,date + '_'+product_id+'.json'), 'wb') as outf:
                         outf.write(response.content)
-                    print('New ' + product_id +' file list for day '+date+' created')
+                    print('New ' + product_id +' file list for day '+date+' created '+day_night)
 
-    def download_files_to_local_based_on_filelist(self, date, products_id = ['VNP02IMG', 'VNP03IMG'], collection_id='5110', data_path='data/VNPL1'):
+    def download_files_to_local_based_on_filelist(self, date, products_id = ['VNP02IMG', 'VNP03IMG'], day_night_modes=['D', 'N'], collection_id='5110', data_path='data/VNPL1'):
         # products_id = ['VNP02IMG', 'VNP03IMG']
 
         date_ndays = (datetime.datetime.strptime(date, '%Y-%m-%d')-datetime.datetime.strptime(date[:4]+'-01-01', '%Y-%m-%d')).days+1
         for i in range(len(products_id)):
-            product_id = products_id[i]
-            vnp_json = open(data_path + '/' + date + '/' + date + '_'+product_id+'.json', )
-            vnp_list = json.load(vnp_json)['content']
-            vnp_list = [file for file in vnp_list if file['archiveSets']==int(collection_id)]
-            print('There are ' + str(vnp_list.__len__()) + ' ' + product_id +' files to download in total.')
-            for vnp_file in vnp_list:
-                vnp_name = vnp_file['name']
+            for day_night in day_night_modes:
+                product_id = products_id[i]
+                vnp_json = open(os.path.join(data_path,date,day_night,date + '_'+product_id+'.json'), 'rb')
+                vnp_list = json.load(vnp_json)['content']
+                vnp_list = [file for file in vnp_list if file['archiveSets']==int(collection_id)]
+                print('There are ' + str(vnp_list.__len__()) + ' ' + product_id +' files to download in total.')
+                for vnp_file in vnp_list:
+                    vnp_name = vnp_file['name']
 
-                time_captured = vnp_name.split('.')[2]
-                vnp_link = vnp_file['downloadsLink']
-                # Keep a clean directory before downloading
-                if not os.path.exists(data_path + '/' + date + '/' + time_captured):
-                    os.mkdir(data_path + '/' + date + '/' + time_captured)
+                    time_captured = vnp_name.split('.')[2]
+                    vnp_link = vnp_file['downloadsLink']
+                    # Keep a clean directory before downloading
+                    if not os.path.exists(os.path.join(data_path , date , day_night, time_captured)):
+                        os.makedirs(os.path.join(data_path , date , day_night, time_captured))
 
-                if not os.path.exists(data_path + '/' + date + '/' + time_captured + '/' + vnp_name):
-                    print("Downloading netCDF files " + vnp_name.split('.')[1] + vnp_name.split('.')[
-                        2] + " from Remote server")
-                    # shutil.rmtree(data_path + '/' + date + '/' + time_captured)
-                    wget_command_vnp = "wget " + vnp_link +" --header X-Requested-With:XMLHttpRequest" + " --header \"Authorization: Bearer emhhb3l1dGltOmVtaGhiM2wxZEdsdFFHZHRZV2xzTG1OdmJRPT06MTYzMzk0NzU0NTphZmRlYWY2MjE2ODg0MjQ5MTEzNmE3MTE4MzZkOWYxYjg3MWQzNWMz\" -P " + data_path + '/' + date + '/' + time_captured
-                    os.system(wget_command_vnp)
+                    if not os.path.exists(os.path.join(data_path , date , day_night, time_captured, vnp_name)):
+                        print("Downloading netCDF files " + vnp_name.split('.')[1] + vnp_name.split('.')[
+                            2] + " from Remote server")
+                        # shutil.rmtree(data_path + '/' + date + '/' + time_captured)
+                        wget_command_vnp = "wget " + vnp_link +" --header X-Requested-With:XMLHttpRequest" + " --header \"Authorization: Bearer emhhb3l1dGltOmVtaGhiM2wxZEdsdFFHZHRZV2xzTG1OdmJRPT06MTYzMzk0NzU0NTphZmRlYWY2MjE2ODg0MjQ5MTEzNmE3MTE4MzZkOWYxYjg3MWQzNWMz\" -P " + os.path.join(data_path, date, day_night, time_captured)
+                        os.system(wget_command_vnp)
 
 if __name__ == '__main__':
     date = '2020-08-08'

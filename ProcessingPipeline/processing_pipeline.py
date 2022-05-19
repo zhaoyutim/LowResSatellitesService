@@ -22,29 +22,31 @@ class Pipeline:
     def __init__(self):
         return
 
-    def read_and_projection(self, date, roi, dir_data='data/VNPL1'):
-        dir_list = glob.glob(dir_data+'/'+date+'/*/')
-        dir_list.sort()
-        for dir_nc in dir_list:
-            dir_nc = dir_nc.replace('\\', '/')
-            if len(glob.glob(dir_nc+'/*.nc'))!=2:
-                print('Current download not complete')
-                continue
-            save_path = dir_data.replace('VNPL1', 'VNPIMGTIF')
-            time_captured = dir_nc.split('/')[-2]
-            if not os.path.exists(save_path + '/' + date):
-                os.mkdir(save_path + '/' + date)
+    def read_and_projection(self, date, roi, dir_data='data/VNPL1', day_night_modes=['D', 'N']):
 
-            print(time_captured)
-            if os.path.exists('data/VNPIMGTIF/' + date + '/' +time_captured+ "/VNPIMG" + date +'-'+ time_captured + ".tif"):
-                print("The GEOTIFF for time " + date +'-'+ time_captured + " has been created!")
-                continue
-            #TODO find a way to divide day night images
-            if int(time_captured)<1200:
-                list_of_bands = ['I01', 'I02', 'I03', 'I04', 'I05', 'i_lat', 'i_lon']
-            else:
-                list_of_bands = ['I04', 'I05', 'i_lat', 'i_lon']
-            try:
+        for day_night in day_night_modes:
+            dir_list = glob.glob(os.path.join(dir_data, date, day_night,'*')+'/')
+            dir_list.sort()
+            for dir_nc in dir_list:
+                # dir_nc = dir_nc.replace('\\', '/')
+                if len(glob.glob(os.path.join(dir_nc,'*.nc')))!=2:
+                    print('Current download not complete')
+                    continue
+                save_path = dir_data.replace('VNPL1', 'VNPIMGTIF')
+                time_captured = os.path.split(dir_nc)[-2]
+                if not os.path.exists(os.path.join(save_path, date, day_night, time_captured)):
+                    os.makedirs(os.path.join(save_path, date, day_night, time_captured))
+
+                print(time_captured)
+                if os.path.exists(os.path.join(save_path, date, day_night, time_captured, "VNPIMG" + date +'-'+ time_captured + ".tif")):
+                    print("The GEOTIFF for time " + date +'-'+ time_captured + " has been created!")
+                    continue
+
+                if day_night=='D':
+                    list_of_bands = ['I01', 'I02', 'I03', 'I04', 'I05', 'i_lat', 'i_lon']
+                else:
+                    list_of_bands = ['I04', 'I05', 'i_lat', 'i_lon']
+
                 files = find_files_and_readers(base_dir=dir_nc, reader='viirs_l1b')
                 scn = Scene(filenames=files)
                 scn.load(list_of_bands)
@@ -56,8 +58,8 @@ class Pipeline:
 
                 # scene_llbox = new_scn.crop(xy_bbox=roi)
 
-                if not os.path.exists(save_path + '/' + date + '/' + time_captured):
-                    os.mkdir(save_path + '/' + date + '/' + time_captured)
+                if not os.path.exists(save_path):
+                    os.makedirs(os.path.join(save_path))
                 new_scn.save_datasets(
                     writer='geotiff', dtype=np.float32, enhance=False,
                     filename='{name}_{start_time:%Y%m%d_%H%M%S}.tif',
@@ -70,17 +72,11 @@ class Pipeline:
                 print(demList)
 
                 # gdal_merge
-                cmd = "gdalbuildvrt -srcnodata 0 -vrtnodata 0 -separate " + dir_nc + "/VNPIMG" + \
-                      date +'-'+ time_captured + ".vrt " + demList
+                cmd = "gdalbuildvrt -srcnodata 0 -vrtnodata 0 -separate " + os.path.join(dir_nc, "VNPIMG" + date +'-'+ time_captured + ".vrt") + ' ' + demList
                 subprocess.call(cmd.split())
 
-                cmd = "gdal_translate " + dir_nc + "/VNPIMG" + \
-                      date +'-'+ time_captured + ".vrt " + dir_nc.replace('VNPL1', 'VNPIMGTIF') + "/VNPIMG" + \
-                      date +'-'+ time_captured + ".tif"
+                cmd = "gdal_translate " + os.path.join(dir_nc, "VNPIMG" + date +'-'+ time_captured + ".vrt") + ' ' + os.path.join(dir_nc.replace('VNPL1', 'VNPIMGTIF'), "VNPIMG" + date +'-'+ time_captured + ".tif")
                 subprocess.call(cmd.split())
-            except:
-                print('Fail to generate GEOTIFF for '+date+'-'+time_captured)
-                pass
 
     def cloud_optimization(self, date, file):
         file_name = file.split('/')[-1]
