@@ -1,12 +1,14 @@
 import numpy as np
 from pyresample import create_area_def
-from satpy import find_files_and_readers, Scene
+from satpy import find_files_and_readers, Scene, available_readers
 
-path = 'data/VNPL1/2020-08-22/2048'
+path = ['data/VNP21/2022-03-04/1036/123.nc']
 
 if __name__ == '__main__':
-    files = find_files_and_readers(base_dir=path, reader='viirs_l1b')
-    scn = Scene(filenames=files)
+    print(available_readers())
+    # files = find_files_and_readers(base_dir=path, reader='viirs_l1b')
+    scn = Scene(reader="viirs_sdr", filenames=path)
+    # scn = Scene(filenames=files)
     scn.load(['I01','I02','I03','I04','I05', 'i_lat', 'i_lon'])
 
     lon=scn['i_lon'].values

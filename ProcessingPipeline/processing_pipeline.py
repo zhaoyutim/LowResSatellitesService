@@ -143,19 +143,19 @@ class Pipeline:
         #     print('blank image smaller than 50mb, delete')
 
     def processing(self, date, roi, utmzone, dir_data='data/VNPL1', dir_tif='data/VNPIMGTIF'):
-        # self.read_and_projection(date, roi, dir_data)
+        self.read_and_projection(date, roi, dir_data)
         file_list = glob.glob(dir_tif + '/' + date + '/*/*.tif')
         file_list.sort()
         for file in file_list:
             file = file.replace('\\', '/')
-            # self.cloud_optimization(date, file)
+            self.cloud_optimization(date, file)
             self.crop_to_roi(date, roi, dir_tif +'/'+ date + '/'+file.split('/')[-2]+'/'+file.split('/')[-1], utmzone)
             # self.upload_to_gcloud(date, 'data/cogsubset/'+date+'/'+file.split('/')[-1])
-        # file_list = glob.glob(dir_tif.replace('VNPIMGTIF', 'cogsubset') + '/' + date + '/*.tif')
-        # file_list.sort()
-        # for file in file_list:
-        #     file = file.replace('\\', '/')
-        #     self.upload_to_gee(date, file)
+        file_list = glob.glob(dir_tif.replace('VNPIMGTIF', 'cogsubset') + '/' + date + '/*.tif')
+        file_list.sort()
+        for file in file_list:
+            file = file.replace('\\', '/')
+            self.upload_to_gee(date, file)
 
 
 
