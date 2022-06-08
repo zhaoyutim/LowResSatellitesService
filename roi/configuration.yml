@@ -1,6 +1,7 @@
 output_bucket: zhaoyutimtest
 
-rectangular_size: 0.5
+rectangular_size_x: 13
+rectangular_size_y: 6
 
 LNU_lighting_complex:
   longitude: -122.237303
@@ -340,3 +341,9 @@ Africa:
   latitude: -17.66
   start: 2022-03-04
   end: 2022-03-06
+
+BC:
+  longitude: -126.62
+  latitude: 54.00
+  start: 2022-06-01
+  end: 2022-06-08
