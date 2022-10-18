@@ -1,9 +1,0 @@
-venv
-data
-.DS_Store
-.idea
-archive/LowResSatellitesService/secrets.yaml
-.gitignore
-AwsData
-kamloop
-archive
