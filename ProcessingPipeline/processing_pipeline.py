@@ -37,7 +37,6 @@ class Pipeline:
                     list_of_bands = ['I01', 'I02', 'I03', 'I04', 'I05', 'i_lat', 'i_lon']
                 else:
                     list_of_bands = ['I04', 'I05', 'i_lat', 'i_lon']
-
             if not os.path.exists(save_path):
                 os.mkdir(save_path)
             if not os.path.exists(save_path + '/' + date):
@@ -46,7 +45,6 @@ class Pipeline:
             if os.path.exists('data/VNPIMGTIF/' + date + '/' +time_captured+ "/VNPIMG" + date +'-'+ time_captured + ".tif"):
                 print("The GEOTIFF for time " + date +'-'+ time_captured + " has been created!")
                 continue
-
             files = find_files_and_readers(base_dir=dir_nc, reader='viirs_l1b')
             scn = Scene(filenames=files)
             print(scn.available_dataset_ids())
