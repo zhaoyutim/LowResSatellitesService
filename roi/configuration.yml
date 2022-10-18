@@ -340,3 +340,27 @@ Africa:
   latitude: -17.66
   start: 2022-03-04
   end: 2022-03-06
+
+mosquito_fire:
+  longitude: -120.74
+  latitude: 39.00
+  start: 2022-10-17
+  end: 2022-09-20
+
+calfcanyon_fire:
+  longitude: -105.50
+  latitude: 35.76
+  start: 2022-04-05
+  end: 2022-04-15
+
+cyprus:
+  lon: 33.18
+  lat: 34.84
+  start: 2021-07-02
+  end: 2021-07-05
+
+kamloop:
+  lon: -121.47
+  lat: 51.00
+  start: 2021-07-26
+  end: 2021-07-27

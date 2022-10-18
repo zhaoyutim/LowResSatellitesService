@@ -2,7 +2,8 @@ venv
 data
 .DS_Store
 .idea
-LowResSatellitesService/secrets.yaml
+archive/LowResSatellitesService/secrets.yaml
 .gitignore
 AwsData
 kamloop
+archive

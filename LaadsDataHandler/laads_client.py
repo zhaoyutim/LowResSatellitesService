@@ -16,31 +16,29 @@ class LaadsClient:
 
     def query_filelist_with_date_range_and_area_of_interest(self, date, products_id = ['VNP02IMG', 'VNP03IMG'], day_night_modes=['D', 'N'], data_path='data/VNPL1', collection_id='5110', area_of_interest='W-129 N56.2 E-110.4 S31.7'):
         # products_id = ['VNP02IMG', 'VNP03IMG']
+        day_night='D'
         for i in range(len(products_id)):
-            for day_night in day_night_modes:
-                product_id = products_id[i]
-                download_link = self.laads_query_api_link\
-                                + '?products='+product_id\
-                                + '&collections='+collection_id\
-                                + '&archiveSets='+collection_id \
-                                + '&temporalRanges=' + date \
-                                + '&regions=[BBOX]' + area_of_interest\
-                                + '&illuminations=' + day_night
+            product_id = products_id[i]
+            download_link = self.laads_query_api_link\
+                            + '?products='+product_id\
+                            + '&collections='+collection_id\
+                            + '&archiveSets='+collection_id \
+                            + '&temporalRanges=' + date \
+                            + '&regions=[BBOX]' + area_of_interest\
+                            + '&illuminations=' + day_night
 
-                response = requests.get(download_link, headers=self.header)
-                if response.status_code != 200:
-                    raise ConnectionRefusedError
-                else:
-                    json_path = os.path.join(data_path, date, day_night)
-                    if not os.path.exists(json_path):
-                        os.makedirs(json_path)
-                    with open(os.path.join(json_path,date + '_'+product_id+'.json', 'wb')) as outf:
-                        outf.write(response.content)
-                    print('New ' + product_id +' file list for day '+date+' created')
+            response = requests.get(download_link, headers=self.header)
+            if response.status_code != 200:
+                raise ConnectionRefusedError
+            else:
+                json_path = os.path.join(data_path, date)
+                if not os.path.exists(json_path):
+                    os.makedirs(json_path)
+                with open(os.path.join(json_path, date + '_'+product_id+'.json'), 'wb') as outf:
+                    outf.write(response.content)
+                print('New ' + product_id +' file list for day '+date+' created')
 
     def download_files_to_local_based_on_filelist(self, date, products_id = ['VNP02IMG', 'VNP03IMG'], collection_id='5110', data_path='data/VNPL1'):
-        # products_id = ['VNP02IMG', 'VNP03IMG']
-
         date_ndays = (datetime.datetime.strptime(date, '%Y-%m-%d')-datetime.datetime.strptime(date[:4]+'-01-01', '%Y-%m-%d')).days+1
         for i in range(len(products_id)):
             product_id = products_id[i]

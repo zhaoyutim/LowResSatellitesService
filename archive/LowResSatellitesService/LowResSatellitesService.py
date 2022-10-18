@@ -1,16 +1,13 @@
 import datetime
 import os
-from glob import glob
 
 import yaml
-from easydict import EasyDict
 from pyproj import CRS
 from sentinelhub import SHConfig, SentinelHubRequest, DataCollection, MimeType, BBox, bbox_to_dimensions, CRS, \
-    SentinelHubDownloadClient, TileSplitter, BBoxSplitter
-import matplotlib.pyplot as plt
+    SentinelHubDownloadClient, BBoxSplitter
 
-from LowResSatellitesService.Satellites.MODIS import MODIS
-from LowResSatellitesService.Satellites.Sentinel3 import Sentinel3
+from archive.LowResSatellitesService.Satellites.MODIS import MODIS
+from archive.LowResSatellitesService.Satellites.Sentinel3 import Sentinel3
 
 
 class LowResSatellitesService:
