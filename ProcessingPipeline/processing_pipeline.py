@@ -14,10 +14,11 @@ class Pipeline:
         return
 
     def read_and_projection(self, date, roi, dir_data='data/VNPL1'):
-        dir_list = glob.glob(dir_data+'/'+date+'/*/')
+        dir_list = glob.glob(dir_data+'/'+date+'/*/*/')
         dir_list.sort()
         for dir_nc in dir_list:
             dir_nc = dir_nc.replace('\\', '/')
+            DN = dir_nc.split('/')[-3]
             if len(glob.glob(dir_nc+'/*.nc'))!=2:
                 print('Current download not complete')
                 continue
@@ -33,7 +34,7 @@ class Pipeline:
                     list_of_bands = ['M11', 'm_lat', 'm_lon']
             else:
                 save_path = dir_data.replace('VNPL1', 'VNPIMGTIF')
-                if int(time_captured) > 1200:
+                if 'D' in dir_nc:
                     list_of_bands = ['I01', 'I02', 'I03', 'I04', 'I05', 'i_lat', 'i_lon']
                 else:
                     list_of_bands = ['I04', 'I05', 'i_lat', 'i_lon']
@@ -59,9 +60,10 @@ class Pipeline:
             new_scn = scn.resample(destination=area)
 
             # scene_llbox = new_scn.crop(xy_bbox=roi)
-
-            if not os.path.exists(save_path + '/' + date + '/' + time_captured):
-                os.mkdir(save_path + '/' + date + '/' + time_captured)
+            if not os.path.exists(save_path + '/' + date + '/'+DN):
+                os.mkdir(save_path + '/' + date+ '/'+DN)
+            if not os.path.exists(save_path + '/' + date + '/'+DN+'/' + time_captured):
+                os.mkdir(save_path + '/' + date+ '/'+DN + '/' + time_captured)
             new_scn.save_datasets(
                 writer='geotiff', dtype=np.float32, enhance=False,
                 filename='{name}_{start_time:%Y%m%d_%H%M%S}.tif',
@@ -143,19 +145,19 @@ class Pipeline:
         #     print('blank image smaller than 50mb, delete')
 
     def processing(self, date, roi, utmzone, dir_data='data/VNPL1', dir_tif='data/VNPIMGTIF'):
-        self.read_and_projection(date, roi, dir_data)
-        file_list = glob.glob(dir_tif + '/' + date + '/*/*.tif')
+        # self.read_and_projection(date, roi, dir_data)
+        file_list = glob.glob(dir_tif + '/' + date + '/*/*/*.tif')
         file_list.sort()
         for file in file_list:
             # file = file.replace('\\', '/')
             self.cloud_optimization(date, file)
-            self.crop_to_roi(date, roi, dir_tif +'/'+ date + '/'+file.split('/')[-2]+'/'+file.split('/')[-1], utmzone)
-            self.upload_to_gcloud(date, 'data/cogsubset/'+date+'/'+file.split('/')[-1].replace('VNPIMG', 'VNPIMGPRO'))
-        file_list = glob.glob(dir_tif.replace('VNPIMGTIF', 'cogsubset') + '/' + date + '/*.tif')
-        file_list.sort()
-        for file in file_list:
+            self.crop_to_roi(date, roi, dir_tif +'/'+ date + '/' + file.split('/')[-3] + '/'+file.split('/')[-2]+'/'+file.split('/')[-1], utmzone)
+            # self.upload_to_gcloud(date, 'data/cogsubset/'+date+'/'+file.split('/')[-1].replace('VNPIMG', 'VNPIMGPRO'))
+        # file_list = glob.glob(dir_tif.replace('VNPIMGTIF', 'cogsubset') + '/' + date + '/*.tif')
+        # file_list.sort()
+        # for file in file_list:
             # file = file.replace('\\', '/')
-            self.upload_to_gee(date, file)
+            # self.upload_to_gee(date, file)
 
 
 

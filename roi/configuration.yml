@@ -353,6 +353,25 @@ calfcanyon_fire:
   start: 2022-04-05
   end: 2022-04-15
 
+mckinney_fire:
+  longitude: -122.89
+  latitude: 41.825
+  start: 2022-07-28
+  end: 2022-04-15
+
+double_creek_fire:
+  longitude: -116.73
+  latitude: 45.428
+  start: 2022-08-29
+  end: 2022-09-15
+
+cedar_creek_fire:
+  longitude: -122.13
+  latitude: 43.733
+  start: 2022-07-31
+  end: 2022-09-15
+
+
 cyprus:
   lon: 33.18
   lat: 34.84
