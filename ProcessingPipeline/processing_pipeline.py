@@ -3,7 +3,6 @@ import os
 import subprocess
 
 import numpy as np
-from google.cloud import storage
 from pyresample import create_area_def
 from satpy import find_files_and_readers
 from satpy.scene import Scene
@@ -87,47 +86,9 @@ class Pipeline:
 
     def cloud_optimization(self, date, file):
         file_name = file.split('/')[-1]
-        # if not os.path.exists('data/cogtif'):
-        #     os.mkdir('data/cogtif')
-        # if not os.path.exists('data/cogtif/' + date):
-        #     os.mkdir('data/cogtif/' + date)
         print('Cloud Optimization')
-        # if not os.path.exists('data/cogtif/' + date + '/' + file_name):
         os.system('rio cogeo create ' + file + ' data/VNPIMGTIF/' + date + '/' + file.split('/')[-2] + '/' + file_name)
         print('Cloud Optimization Finish')
-        # else:
-        #     print('Cloud Optimized Geotiff already exists')
-
-    def upload_to_gcloud(self, date, file):
-        print('Upload to gcloud')
-        file_name = file.split('/')[-1]
-        storage_client = storage.Client()
-        year = date[:4]
-        # if not storage.Blob(bucket=bucket, name='VNPIMGTIF/'+year + date + '/' + file_name).exists(storage_client):
-        upload_cmd = 'gsutil cp ' + file + ' gs://ai4wildfire/' + 'VNPIMGTIF/'+year + date + '/' + file_name
-        print(upload_cmd)
-        os.system(upload_cmd)
-        print('finish uploading' + file)
-        # else:
-        #     print('file exist already')
-
-    def upload_to_gee(self, date, file, asset_name='proj3_test_night'):
-        print('start uploading to gee')
-        time = file.split('/')[-1][-8:-4]
-        year = date[:4]
-        file_name = file.split('/')[-1]
-        time_start = date + 'T' + time[:2] + ':' + time[2:] + ':00'
-        if int(time) <= 1200:
-            cmd = 'earthengine upload image --time_start ' + time_start + ' --asset_id=projects/ee-zhaoyutim/assets/swedish_fire_night/' + \
-                  file.split('/')[-1][
-                  :-4] + ' --pyramiding_policy=sample gs://ai4wildfire/' + 'VNPIMGTIF/'+year + date + '/' + file_name
-            subprocess.call(cmd.split())
-        else:
-            cmd = 'earthengine upload image --time_start ' + time_start + ' --asset_id=projects/ee-zhaoyutim/assets/swedish_fire_day/' + \
-                  file.split('/')[-1][
-                  :-4] + ' --pyramiding_policy=sample gs://ai4wildfire/' + 'VNPIMGTIF/'+year + date + '/' + file_name
-            subprocess.call(cmd.split())
-        print('Uploading in progress for image '+time_start)
 
     def crop_to_roi(self, date, roi, file, utmzone):
         if not os.path.exists('data/cogsubset'):
@@ -140,27 +101,11 @@ class Pipeline:
         os.system(cmd)
         os.system('gdalwarp -t_srs EPSG:'+utmzone+' -tr 375 375'+file + ' ' + os.path.join('data/cogsubset/', date, file.split('/')[-1]) +' '+os.path.join('data/cogsubset/', date, file.split('/')[-1].replace('VNPIMG', 'VNPIMGPRO')))
         os.remove(os.path.join('data/cogsubset/', date, file.split('/')[-1]))
-        # if os.path.getsize(file.replace('cogtif','cogsubset')) <= 50*1000*1000:
-        #     os.remove(file.replace('cogtif','cogsubset'))
-        #     print('blank image smaller than 50mb, delete')
 
     def processing(self, date, roi, utmzone, dir_data='data/VNPL1', dir_tif='data/VNPIMGTIF'):
-        # self.read_and_projection(date, roi, dir_data)
+        self.read_and_projection(date, roi, dir_data)
         file_list = glob.glob(dir_tif + '/' + date + '/*/*/*.tif')
         file_list.sort()
         for file in file_list:
-            # file = file.replace('\\', '/')
             self.cloud_optimization(date, file)
             self.crop_to_roi(date, roi, dir_tif +'/'+ date + '/' + file.split('/')[-3] + '/'+file.split('/')[-2]+'/'+file.split('/')[-1], utmzone)
-            # self.upload_to_gcloud(date, 'data/cogsubset/'+date+'/'+file.split('/')[-1].replace('VNPIMG', 'VNPIMGPRO'))
-        # file_list = glob.glob(dir_tif.replace('VNPIMGTIF', 'cogsubset') + '/' + date + '/*.tif')
-        # file_list.sort()
-        # for file in file_list:
-            # file = file.replace('\\', '/')
-            # self.upload_to_gee(date, file)
-
-
-
-if __name__ == '__main__':
-    pipeline = Pipeline()
-    pipeline.processing('2020-08-09')
