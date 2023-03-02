@@ -342,14 +342,46 @@ Africa:
   start: 2022-03-04
   end: 2022-03-06
 
-BC:
-  longitude: -126.62
-  latitude: 54.00
-  start: 2022-06-01
-  end: 2022-06-08
+mosquito_fire:
+  longitude: -120.74
+  latitude: 39.00
+  start: 2022-10-17
+  end: 2022-09-20
 
-swedish_fire:
-  longitude: 24.5
-  latitude: 61.5
-  start: 2018-07-14
-  end: 2018-07-24
+calfcanyon_fire:
+  longitude: -105.50
+  latitude: 35.76
+  start: 2022-04-05
+  end: 2022-04-15
+
+mckinney_fire:
+  longitude: -122.89
+  latitude: 41.825
+  start: 2022-07-28
+  end: 2022-04-15
+
+double_creek_fire:
+  longitude: -116.73
+  latitude: 45.428
+  start: 2022-08-29
+  end: 2022-09-15
+
+cedar_creek_fire:
+  longitude: -122.13
+  latitude: 43.733
+  start: 2022-07-31
+  end: 2022-09-15
+
+
+cyprus:
+  lon: 33.18
+  lat: 34.84
+  start: 2021-07-02
+  end: 2021-07-05
+
+kamloop:
+  lon: -121.47
+  lat: 51.00
+  start: 2021-07-26
+  end: 2021-07-27
+>>>>>>> 869e18dc110b0873b0576d7d58ece9b08dbf01d8
