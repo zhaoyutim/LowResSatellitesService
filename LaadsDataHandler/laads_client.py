@@ -44,7 +44,7 @@ class LaadsClient:
                 json_path = os.path.join(data_path, id, date, day_night)
                 if os.path.exists(os.path.join(json_path, date + '_' + product_id + '.json')):
                     print('Json already exist')
-                    return
+                    continue
 
                 response = requests.get(download_link, headers=self.header)
                 if response.status_code != 200:
