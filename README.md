@@ -1,14 +1,23 @@
 ### Web Clients for downloading and processing raw VIIRS satellite images from LAADS DAAC
 
-Key Dependencies: GDAL, Satpy
+## Repo Structure
+    .
+    ├── LaadsDataHandler                                     # Client for NASA LAADS Distributed Active Archive Center 
+    │   ├── laads_client.py                                  # Client to request product list json given roi and date 
+    ├── ProcessingPipeline                                   # Figures used in README 
+    ├── roi                                                  # Region of Interest Folder
+    │   ├── *.csv                                            # Region of Interest with fire_id, start_date end_date and coordinates 
+    ├── convert_csv.py                                       # Script to convert csv downloaded from GEE script to desired format
+    ├── main_large_scale.py                                  # Download NetCDF files according to product list json in parallel
+    ├── main_processing_pipepline.py                         # Main processing pipeline to project, subset the dataset  
+    ├── sanity_check.py                                      # Sanity check on the downloaded files and auto-removal
+    ├── upload_to_gee.py                                     # Upload to GEE      
+    └── README.md
 
-main.py: entry of this project \
-LaadsDataHandler/laads_client.py: LAADS client to download satellite images from LAADS DAAC. Key words support: day_night, product_id, collection_id, roi \
-ProcessingPipeline/processing_pipeline.py: Whole processing pipeline consists of 1) reading and projection of raw satellite images, 2) cloud optimization 3) roi crop 4) upload to gcloud 5) upload from gcloud to gee \
-roi: all the study areas used.
-
-Current Known Problem: Connection refuse from LAADS side, you can try to rerun the script. \
-
-
+This repo intends to download VIIRS Level-1 product from NASA LAADS DAAC.\
+User has to first run main_large_scale.py by feeding the collection_id product_id and the list of fires to download.\
+After the NetCDF files are downloaded locally, User has to run main_processing_pipeline.py to process the file to geotiff \
+and subset them to image patches on fire roi.\
+Key Dependencies: GDAL, Satpy, earthengine-api
 
 

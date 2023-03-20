@@ -38,8 +38,20 @@ def upload(file):
     upload_to_gee(file)
 
 if __name__=='__main__':
-    filepath='E:\\viirs\\subset'
-    file_list = glob.glob(os.path.join(filepath, '*', '*.tif'))
+    import_all = True
+    filepath = 'C:\\Users\\Yu\\Desktop\\viirs\\subset'
+    if import_all:
+        file_list = glob.glob(os.path.join(filepath, '*', '*.tif'))
+    else:
+        log_path = 'log/sanity_check_gee*.log'
+        log_list = glob.glob(log_path)
+        log_list.sort()
+        with open(log_list[-1]) as f:
+            f = f.readlines()
+        file_list = []
+        for line in f:
+            file_list.append(os.path.join(filepath, line.split('_')[1],line.split('_')[2].replace('\n', '')+'.tif'))
+
     results = []
     with multiprocessing.Pool(processes=8) as pool:
         for file in file_list:

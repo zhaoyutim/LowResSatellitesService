@@ -3,16 +3,18 @@ import logging
 import os
 import time
 from logging.handlers import RotatingFileHandler
+import ee
 
-logFile = 'log/sanity_check_' + time.strftime("%Y%m%d-%H%M%S") + '.log'
 
-logger = logging.getLogger('my_logger')
-handler = RotatingFileHandler(logFile, mode='a', maxBytes=50 * 1024 * 1024,
-                              backupCount=5, encoding=None, delay=False)
-logger.setLevel(logging.DEBUG)
-logger.addHandler(handler)
 
 def sanity_check(dir_nc='E:\\viirs\\VNPNC', dir_tiff='G:\\viirs\\VNPIMGTIF'):
+    logFile = 'log/sanity_check_' + time.strftime("%Y%m%d-%H%M%S") + '.log'
+    logger = logging.getLogger('my_logger')
+    handler = RotatingFileHandler(logFile, mode='a', maxBytes=50 * 1024 * 1024,
+                                  backupCount=5, encoding=None, delay=False)
+    logger.setLevel(logging.DEBUG)
+    logger.addHandler(handler)
+
     nc_list = glob.glob(os.path.join(dir_nc, '*', '*', '*'))
     nc_list.sort()
     for nc_file in nc_list:
@@ -42,6 +44,31 @@ def sanity_check(dir_nc='E:\\viirs\\VNPNC', dir_tiff='G:\\viirs\\VNPIMGTIF'):
                 os.rmdir(nc_file)
             print('date {}, day_night {}, capture time {} does not have any NC files or TIF files'.format(date, DN, capture_time))
 
-if __name__=='__main__':
-    sanity_check(dir_nc='G:\\viirs\\VNPNC', dir_tiff='E:\\viirs\\VNPIMGTIF')
 
+def sanity_check_gee(dir_tiff):
+    ee.Initialize()
+    logFile = 'log/sanity_check_gee_' + time.strftime("%Y%m%d-%H%M%S") + '.log'
+
+    logger = logging.getLogger('my_logger')
+    handler = RotatingFileHandler(logFile, mode='a', maxBytes=50 * 1024 * 1024,
+                                  backupCount=5, encoding=None, delay=False)
+    logger.setLevel(logging.DEBUG)
+    logger.addHandler(handler)
+
+    tif_list = glob.glob(os.path.join(dir_tiff, '*', '*.tif'))
+    tif_list.sort()
+    img_col = ee.ImageCollection('projects/proj5-dataset/assets/proj5_dataset')
+    img_list_gee = img_col.aggregate_array('system:id').getInfo()
+    img_list_gee = [img_gee.split('/')[-1] for img_gee in img_list_gee]
+    for tif_file in tif_list:
+        tif_filename_gee = tif_file.split('\\')[-2]+'_'+tif_file.split('\\')[-1][:-4]
+        if tif_filename_gee not in img_list_gee:
+            print('GEE file not exist{}'.format(tif_filename_gee))
+            logger.info('GEE file not exist_{}'.format(tif_filename_gee))
+
+    print('finish')
+
+
+if __name__=='__main__':
+    sanity_check(dir_nc='G:\\viirs\\VNPNC', dir_tiff='C:\\Users\\Yu\\Desktop\\viirs\\VNPMODTIF')
+    # sanity_check_gee('E:\\viirs\\subset')

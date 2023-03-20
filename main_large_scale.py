@@ -5,14 +5,13 @@ import pandas as pd
 from LaadsDataHandler.laads_client import LaadsClient
 from ProcessingPipeline.processing_pipeline import Pipeline
 if __name__ == '__main__':
-    year = '2020'
-    filename = 'roi/us_fire_' + year + '_out.csv'
+    year = '2019'
+    filename = 'roi/us_fire_' + year + '_out_new.csv'
     df = pd.read_csv(filename)
-    utmzone = '32610'
-    num_processes = 4
+    num_processes = 8
     laads_client = LaadsClient()
     collection_id = '5200' # 5110 for VNP series
-    products_id = ['VNP02IMG', 'VNP03IMG'] #['VJ102IMG', 'VJ103IMG'] ['VNP02MOD', 'VNP03MOD'], ['VNP02IMG', 'VNP03IMG'], ['VJ102MOD', 'VJ103MOD']
+    products_id = ['VNP02MOD', 'VNP03MOD'] #['VJ102IMG', 'VJ103IMG'] ['VNP02MOD', 'VNP03MOD'], ['VNP02IMG', 'VNP03IMG'], ['VJ102MOD', 'VJ103MOD']
     df = df.sort_values(by=['Id'])
     ids, start_dates, end_dates, lons, lats = df['Id'].values.astype(str), df['start_date'].values.astype(str), df['end_date'].values.astype(str), df['lon'].values.astype(float), df['lat'].values.astype(float)
     for i, id in enumerate(ids):

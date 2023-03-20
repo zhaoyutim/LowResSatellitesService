@@ -69,6 +69,7 @@ class Pipeline:
             else:
                 dem_list = glob.glob(dir_nc + "\\I[0-9]*_[0-9]*_[0-9]*.tif")
             dem_list.sort()
+            tif_file_list = dem_list
             dem_list = ' '.join(map(str, dem_list))
             cmd = "gdalbuildvrt -srcnodata 0 -vrtnodata 0 -separate " + dir_nc + "\\VNP"+ product_id + \
                   date + '-' + time_captured + ".vrt " + dem_list
@@ -77,6 +78,8 @@ class Pipeline:
                   date +'-'+ time_captured + ".vrt " + os.path.join(save_path, date, DN, time_captured) + "\\VNP" + product_id + \
                   date +'-'+ time_captured + ".tif"
             subprocess.call(cmd.split())
+            for tif_file in tif_file_list:
+                os.remove(tif_file)
             del new_scn
             del scn
     def crop_to_roi(self, date, id, roi, file, dir_subset, utmzone, product_id):

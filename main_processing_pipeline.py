@@ -5,8 +5,8 @@ import pandas as pd
 from LaadsDataHandler.laads_client import LaadsClient
 from ProcessingPipeline.processing_pipeline import Pipeline
 if __name__ == '__main__':
-    year = '2020'
-    filename = 'roi/us_fire_' + year + '_out.csv'
+    year = '2019'
+    filename = 'roi/us_fire_' + year + '_out_new.csv'
     df = pd.read_csv(filename)
     utmzone = '4326'
     pipeline = Pipeline()
@@ -22,7 +22,7 @@ if __name__ == '__main__':
         with multiprocessing.Pool(processes=4) as pool:
             for k in range(duration.days):
                 date = (datetime.datetime.strptime(start_date, '%Y-%m-%d') + datetime.timedelta(k)).strftime('%Y-%m-%d')
-                result = pool.apply_async(pipeline.processing, (date, id, roi, utmzone, 'IMG', 'G:\\viirs\\VNPNC',
-                                                                'E:\\viirs\\VNPMODTIF', 'G:\\viirs\\subset'))
+                result = pool.apply_async(pipeline.processing, (date, id, roi, utmzone, 'MOD', 'G:\\viirs\\VNPNC',
+                                                                'C:\\Users\\Yu\\Desktop\\viirs\\VNPMODTIF', 'C:\\Users\\Yu\\Desktop\\viirs\\subset'))
                 results.append(result)
             results = [result.get() for result in results if result is not None]
