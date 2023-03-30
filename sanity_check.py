@@ -18,9 +18,9 @@ def sanity_check(dir_nc='E:\\viirs\\VNPNC', dir_tiff='G:\\viirs\\VNPIMGTIF'):
     nc_list = glob.glob(os.path.join(dir_nc, '*', '*', '*'))
     nc_list.sort()
     for nc_file in nc_list:
-        date = nc_file.split('\\')[-3]
-        DN = nc_file.split('\\')[-2]
-        capture_time = nc_file.split('\\')[-1]
+        date = nc_file.split('/')[-3]
+        DN = nc_file.split('/')[-2]
+        capture_time = nc_file.split('/')[-1]
         tif_file = os.path.join(dir_tiff, date, DN, capture_time)
         nc_list_of_day =  glob.glob(os.path.join(nc_file, '*.nc'))
         intermediate_tif_list_of_day = glob.glob(os.path.join(nc_file, '*.tif'))
@@ -70,5 +70,5 @@ def sanity_check_gee(dir_tiff):
 
 
 if __name__=='__main__':
-    sanity_check(dir_nc='G:\\viirs\\VNPNC', dir_tiff='C:\\Users\\Yu\\Desktop\\viirs\\VNPMODTIF')
+    sanity_check(dir_nc='data/VNPNC', dir_tiff='data/VNPIMGTIF')
     # sanity_check_gee('E:\\viirs\\subset')
