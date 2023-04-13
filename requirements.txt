@@ -1,5 +1,5 @@
 easydict==1.9
-GDAL==3.4.1
+GDAL==3.6.3
 imageio==2.13.5
 matplotlib==3.3.4
 numpy==1.19.5
@@ -7,9 +7,9 @@ osgeo==0.0.1
 protobuf==4.21.1
 pydap==3.2.2
 pyproj==3.0.1
-pyresample==1.21.1
+pyresample==1.22.3
 PyYAML==6.0
-rasterio==1.2.9
+rasterio==1.2.10
 requests==2.26.0
-satpy==0.26.0
+satpy==0.27.0
 sentinelhub==3.6.1

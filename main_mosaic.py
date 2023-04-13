@@ -1,7 +1,7 @@
 import datetime
 import glob
 import os
-
+import matplotlib.pyplot as plt
 import numpy as np
 import rasterio
 from rasterio.merge import merge
@@ -11,7 +11,7 @@ def mosaic_geotiffs(geotiff_files):
     src_files = [rasterio.open(file) for file in geotiff_files]
 
     # Merge images using maximum values for overlapping locations
-    mosaic, out_transform = merge(src_files, method="max")
+    mosaic, out_transform = merge(src_files, method="max", nodata=0.0, res=0.00336)
 
     # Copy metadata from the first file
     out_meta = src_files[0].meta.copy()
@@ -54,14 +54,25 @@ def combine_tiff(file1_path, file2_path):
 
 
 if __name__=='__main__':
-    id = 'EU'
-    start_date = '2023-03-15'
-    end_date = '2023-03-26'
+    id = 'ASIA'
+    if not os.path.exists(os.path.join('data/tif_dataset', id)):
+        os.mkdir(os.path.join('data/tif_dataset', id))
+    start_date = '2023-03-25'
+    end_date = '2023-04-04'
     duration = datetime.datetime.strptime(end_date, '%Y-%m-%d') - datetime.datetime.strptime(start_date, '%Y-%m-%d')
     for k in range(duration.days):
         date = (datetime.datetime.strptime(start_date, '%Y-%m-%d') + datetime.timedelta(k)).strftime('%Y-%m-%d')
         print('Processing: ' + date)
-        output_path = os.path.join('data/tif_dataset/', id, 'VNPIMG'+date+'_mosaic.tif')
-        tiff_files = glob.glob(os.path.join('data/tif_dataset/', id, 'VNPIMG'+date+'*.tif'))
+        output_path = os.path.join('data/tif_dataset', id, 'VNPIMG'+date+'_mosaic.tif')
+        tiff_files = glob.glob(os.path.join('data/subset/', id, 'VNPIMG'+date+'*.tif'))
+        print('Remove Nan')
+        for tiff_file in tiff_files:
+            array, profile = read_tiff(tiff_file)
+            array = np.nan_to_num(array)
+            plt.imshow(array[0,:,:])
+            plt.show()
+            write_tiff(tiff_file, array, profile)
+        print('Finish remove Nan')
         mosaic, mosaic_metadata = mosaic_geotiffs(tiff_files)
         write_tiff(output_path, mosaic, mosaic_metadata)
+        print('Finish Creating mosaic')

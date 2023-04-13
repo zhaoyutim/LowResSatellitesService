@@ -5,10 +5,50 @@ import glob
 import multiprocessing
 import os
 import platform
+import sys
 
 import pandas as pd
+
 from LaadsDataHandler.laads_client import LaadsClient
-from ProcessingPipeline.processing_pipeline import Pipeline
+
+
+def json_wrapper(args):
+    os.dup2(sys.stdout.fileno(), 1)
+    return laads_client.query_filelist_with_date_range_and_area_of_interest(*args)
+
+
+def client_wrapper(args):
+    os.dup2(sys.stdout.fileno(), 1)
+    return laads_client.download_files_to_local_based_on_filelist(*args)
+
+
+def get_json_tasks(start_date, duration, area_of_interest, products_id, day_night, dir_json, collection_id):
+    tasks = []
+    for k in range(duration.days):
+        tasks.append(
+            (
+                id,
+                (datetime.datetime.strptime(start_date, '%Y-%m-%d') + datetime.timedelta(k)).strftime(
+                    '%Y-%m-%d'),
+                area_of_interest, products_id, ['D'], dir_json, collection_id
+            )
+        )
+    return tasks
+
+
+def get_client_tasks(id, start_date, duration, products_id, day_night, dir_json, dir_nc, collection_id):
+    tasks = []
+    for k in range(duration.days):
+        tasks.append(
+            (
+                id,
+                (datetime.datetime.strptime(start_date, '%Y-%m-%d') + datetime.timedelta(k)).strftime(
+                    '%Y-%m-%d'),
+                products_id, ['D'], dir_json, dir_nc, collection_id
+            )
+        )
+    return tasks
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Process some integers.')
     parser.add_argument('-pid', type=str, help='Product ID IMG or MOD')
@@ -36,18 +76,13 @@ if __name__ == '__main__':
     laads_client = LaadsClient()
     collection_id = '5200' # 5110 for VNP series
     products_id = ['VNP02'+product_id, 'VNP03'+product_id] #['VJ102IMG', 'VJ103IMG'] ['VNP02MOD', 'VNP03MOD'], ['VNP02IMG', 'VNP03IMG'], ['VJ102MOD', 'VJ103MOD']
-    def json_wrapper(args):
-        return laads_client.query_filelist_with_date_range_and_area_of_interest(*args)
-    def client_wrapper(args):
-        return laads_client.download_files_to_local_based_on_filelist(*args)
+
     if mode == 'csv':
         year = args.y
         filename = 'roi/us_fire_' + year + '_out_new.csv'
         df = pd.read_csv(filename)
         df = df.sort_values(by=['Id'])
         ids, start_dates, end_dates, lons, lats = df['Id'].values.astype(str), df['start_date'].values.astype(str), df['end_date'].values.astype(str), df['lon'].values.astype(float), df['lat'].values.astype(float)
-        tasks = []
-        tasks2 = []
         for i, id in enumerate(ids):
             if rs:
                 log_list = glob.glob('log/'+'nc_check*.log')
@@ -63,35 +98,9 @@ if __name__ == '__main__':
             roi = [lon - roi_size, lat - roi_size, lon + roi_size, lat + roi_size]
             duration = datetime.datetime.strptime(end_date, '%Y-%m-%d')-datetime.datetime.strptime(start_date, '%Y-%m-%d')
             area_of_interest = 'W'+str(roi[0])+' '+'N'+str(roi[3])+' '+'E'+str(roi[2])+' '+'S'+str(roi[1])
-            procs = []
-            procs_download = []
             print('Currently processing id {}'.format(id))
-
-            for k in range(duration.days):
-                tasks.append(
-                    (
-                        id,
-                        (datetime.datetime.strptime(start_date, '%Y-%m-%d') + datetime.timedelta(k)).strftime(
-                            '%Y-%m-%d'),
-                        area_of_interest, products_id, ['D'], dir_json, collection_id
-                    )
-                )
-            for k in range(duration.days):
-                tasks2.append(
-                    (
-                        id,
-                        (datetime.datetime.strptime(start_date, '%Y-%m-%d') + datetime.timedelta(k)).strftime(
-                            '%Y-%m-%d'),
-                        products_id, ['D'], dir_json, dir_nc, collection_id
-                    )
-                )
-
-        with multiprocessing.Pool(processes=4) as pool:
-            results = list(pool.imap_unordered(json_wrapper, tasks))
-        print(results)
-        with multiprocessing.Pool(processes=4) as pool:
-            results = list(pool.imap_unordered(client_wrapper, tasks2))
-        print(results)
+            tasks = get_json_tasks(start_date, duration, area_of_interest, products_id, ['D'], dir_json, collection_id)
+            tasks2 = get_client_tasks(id, start_date, duration, products_id, ['D'], dir_json, dir_nc, collection_id)
 
     elif mode == 'roi':
         roi_arg = args.roi
@@ -101,33 +110,15 @@ if __name__ == '__main__':
         duration = datetime.datetime.strptime(end_date, '%Y-%m-%d') - datetime.datetime.strptime(start_date, '%Y-%m-%d')
         area_of_interest = 'W' + str(roi[0]) + ' ' + 'N' + str(roi[3]) + ' ' + 'E' + str(roi[2]) + ' ' + 'S' + str(
             roi[1])
-        procs = []
-        procs_download = []
-        tasks = []
-        tasks2 = []
-        id = 'EU'
+        id = 'ASIA'
         print('Currently processing id {}'.format(id))
-        for k in range(duration.days):
-            tasks.append(
-                (
-                    id,
-                    (datetime.datetime.strptime(start_date, '%Y-%m-%d') + datetime.timedelta(k)).strftime('%Y-%m-%d'),
-                    area_of_interest, products_id, ['D'], dir_json, collection_id
-                )
-            )
-        for k in range(duration.days):
-            tasks2.append(
-                (
-                    id,
-                    (datetime.datetime.strptime(start_date, '%Y-%m-%d') + datetime.timedelta(k)).strftime('%Y-%m-%d'),
-                    products_id, ['D'], dir_json, dir_nc, collection_id
-                )
-            )
-        with multiprocessing.Pool(processes=4) as pool:
-            results = list(pool.imap_unordered(json_wrapper, tasks))
-        print(results)
-        with multiprocessing.Pool(processes=4) as pool:
-            results = list(pool.imap_unordered(client_wrapper, tasks2))
-        print(results)
+        tasks = get_json_tasks(start_date, duration, area_of_interest, products_id, ['D'], dir_json, collection_id)
+        tasks2 = get_client_tasks(id, start_date, duration, products_id, ['D'], dir_json, dir_nc, collection_id)
     else:
-        raise('No supported mode')
+        raise('No Support Mode')
+    with multiprocessing.Pool(processes=4) as pool:
+        results = list(pool.imap_unordered(json_wrapper, tasks))
+    print(results)
+    with multiprocessing.Pool(processes=4) as pool:
+        results = list(pool.imap_unordered(client_wrapper, tasks2))
+    print(results)

@@ -56,7 +56,6 @@ class Pipeline:
                 lat = scn['i_lat'].values
             area = create_area_def(area_id="area", projection='WGS84', shape=(lat.shape[1], lat.shape[0]), lon=lon, lat=lat)
             new_scn = scn.resample(destination=area)
-
             # scene_llbox = new_scn.crop(xy_bbox=roi)
             if not os.path.exists(os.path.join(save_path, date, DN)):
                 os.mkdir(os.path.join(save_path, date, DN))

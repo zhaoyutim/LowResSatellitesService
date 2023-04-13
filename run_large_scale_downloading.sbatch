@@ -9,4 +9,4 @@ echo "Starting job ${SLURM_JOB_ID} on ${SLURMD_NODENAME}"
 nvidia-smi
 . /geoinfo_vol1/zhao2/mambaforge/etc/profile.d/conda.sh
 conda activate myenv
-PYTHONUNBUFFERED=1; python3 main_large_scale.py -pid $1 -mode $2 -y $3 -roi $4 -sd $5 -ed %6
+PYTHONUNBUFFERED=1; python3 main_large_scale.py -pid $1 -mode $2 -y $3 -roi=$4 -sd $5 -ed %6
