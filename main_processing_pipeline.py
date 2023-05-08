@@ -7,6 +7,7 @@ import platform
 
 import pandas as pd
 from ProcessingPipeline.processing_pipeline import Pipeline
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Process some integers.')
     parser.add_argument('-pid', type=str, help='Product ID IMG or MOD')

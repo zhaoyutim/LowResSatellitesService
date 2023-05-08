@@ -30,7 +30,7 @@ def get_json_tasks(start_date, duration, area_of_interest, products_id, day_nigh
                 id,
                 (datetime.datetime.strptime(start_date, '%Y-%m-%d') + datetime.timedelta(k)).strftime(
                     '%Y-%m-%d'),
-                area_of_interest, products_id, ['D'], dir_json, collection_id
+                area_of_interest, products_id, ['N'], dir_json, collection_id
             )
         )
     return tasks
@@ -44,7 +44,7 @@ def get_client_tasks(id, start_date, duration, products_id, day_night, dir_json,
                 id,
                 (datetime.datetime.strptime(start_date, '%Y-%m-%d') + datetime.timedelta(k)).strftime(
                     '%Y-%m-%d'),
-                products_id, ['D'], dir_json, dir_nc, collection_id
+                products_id, ['N'], dir_json, dir_nc, collection_id
             )
         )
     return tasks
@@ -57,7 +57,7 @@ if __name__ == '__main__':
     parser.add_argument('-roi', type=str, help='lon_min,lat_min,lon_max,lat_max')
     parser.add_argument('-sd', type=str, help='Start Date if mode is selected as roi')
     parser.add_argument('-ed', type=str, help='Start Date if mode is selected as roi')
-    parser.add_argument('-rs', type=bool, help='Resume downloading')
+    parser.add_argument('-rs', type=bool, help='Resume downloading', default=False)
     args = parser.parse_args()
     mode = args.mode
     product_id = args.pid
@@ -84,6 +84,8 @@ if __name__ == '__main__':
         df = df.sort_values(by=['Id'])
         ids, start_dates, end_dates, lons, lats = df['Id'].values.astype(str), df['start_date'].values.astype(str), df['end_date'].values.astype(str), df['lon'].values.astype(float), df['lat'].values.astype(float)
         for i, id in enumerate(ids):
+            if int(id) < 24461996:
+                continue
             if rs:
                 log_list = glob.glob('log/'+'nc_check*.log')
                 log_list.sort()
@@ -99,8 +101,14 @@ if __name__ == '__main__':
             duration = datetime.datetime.strptime(end_date, '%Y-%m-%d')-datetime.datetime.strptime(start_date, '%Y-%m-%d')
             area_of_interest = 'W'+str(roi[0])+' '+'N'+str(roi[3])+' '+'E'+str(roi[2])+' '+'S'+str(roi[1])
             print('Currently processing id {}'.format(id))
-            tasks = get_json_tasks(start_date, duration, area_of_interest, products_id, ['D'], dir_json, collection_id)
-            tasks2 = get_client_tasks(id, start_date, duration, products_id, ['D'], dir_json, dir_nc, collection_id)
+            tasks = get_json_tasks(start_date, duration, area_of_interest, products_id, ['N'], dir_json, collection_id)
+            tasks2 = get_client_tasks(id, start_date, duration, products_id, ['N'], dir_json, dir_nc, collection_id)
+            with multiprocessing.Pool(processes=4) as pool:
+                results = list(pool.imap_unordered(json_wrapper, tasks))
+            print(results)
+            with multiprocessing.Pool(processes=4) as pool:
+                results = list(pool.imap_unordered(client_wrapper, tasks2))
+            print(results)
 
     elif mode == 'roi':
         roi_arg = args.roi
@@ -112,13 +120,13 @@ if __name__ == '__main__':
             roi[1])
         id = 'ASIA'
         print('Currently processing id {}'.format(id))
-        tasks = get_json_tasks(start_date, duration, area_of_interest, products_id, ['D'], dir_json, collection_id)
-        tasks2 = get_client_tasks(id, start_date, duration, products_id, ['D'], dir_json, dir_nc, collection_id)
+        tasks = get_json_tasks(start_date, duration, area_of_interest, products_id, ['N'], dir_json, collection_id)
+        tasks2 = get_client_tasks(id, start_date, duration, products_id, ['N'], dir_json, dir_nc, collection_id)
+        with multiprocessing.Pool(processes=4) as pool:
+            results = list(pool.imap_unordered(json_wrapper, tasks))
+        print(results)
+        with multiprocessing.Pool(processes=4) as pool:
+            results = list(pool.imap_unordered(client_wrapper, tasks2))
+        print(results)
     else:
         raise('No Support Mode')
-    with multiprocessing.Pool(processes=4) as pool:
-        results = list(pool.imap_unordered(json_wrapper, tasks))
-    print(results)
-    with multiprocessing.Pool(processes=4) as pool:
-        results = list(pool.imap_unordered(client_wrapper, tasks2))
-    print(results)
