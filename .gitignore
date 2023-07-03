@@ -3,3 +3,5 @@ log
 ._.DS_Store
 .idea
 wget*
+venv
+archive
