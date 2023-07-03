@@ -43,8 +43,8 @@ class LaadsClient:
                                 + '&illuminations=' + day_night
                 json_path = os.path.join(data_path, id, date, day_night)
                 if os.path.exists(os.path.join(json_path, date + '_' + product_id + '.json')):
-                    print('Json already exist')
-                    continue
+                    print('Json already exist, update the Json')
+                    os.remove(os.path.join(json_path, date + '_' + product_id + '.json'))
 
                 response = requests.get(download_link, headers=self.header)
                 if response.status_code != 200:

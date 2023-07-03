@@ -5,9 +5,15 @@ import time
 from logging.handlers import RotatingFileHandler
 import ee
 
+def sanity_check_region(id, dir_subset='data/subset'):
+    file_list_subset_mod = glob.glob(os.path.join(dir_subset,id, '*MOD*.tif'))
+    file_list_subset_img = glob.glob(os.path.join(dir_subset, id, '*IMG*.tif'))
+    for file in file_list_subset_mod:
+        if file.replace('MOD','IMG') not in file_list_subset_img:
+            print(file)
 
 
-def sanity_check(dir_nc='E:\\viirs\\VNPNC', dir_tiff='G:\\viirs\\VNPIMGTIF'):
+def sanity_check_nc_tif(dir_nc='E:\\viirs\\VNPNC', dir_tiff='G:\\viirs\\VNPIMGTIF'):
     logFile = 'log/sanity_check_' + time.strftime("%Y%m%d-%H%M%S") + '.log'
     logger = logging.getLogger('my_logger')
     handler = RotatingFileHandler(logFile, mode='a', maxBytes=50 * 1024 * 1024,
@@ -55,13 +61,24 @@ def sanity_check_gee(dir_tiff):
     logger.setLevel(logging.DEBUG)
     logger.addHandler(handler)
 
-    tif_list = glob.glob(os.path.join(dir_tiff, '*', '*.tif'))
+    tif_list = glob.glob(os.path.join(dir_tiff, '21751303', '*.tif'))
     tif_list.sort()
     img_col = ee.ImageCollection('projects/proj5-dataset/assets/proj5_dataset')
     img_list_gee = img_col.aggregate_array('system:id').getInfo()
     img_list_gee = [img_gee.split('/')[-1] for img_gee in img_list_gee]
     for tif_file in tif_list:
-        tif_filename_gee = tif_file.split('\\')[-2]+'_'+tif_file.split('\\')[-1][:-4]
+        id = tif_file.split('/')[-2]
+        date = tif_file.split('/')[-1][6:16]
+        tif_time = tif_file.split('/')[-1][17:21]
+        vnp_json = open(glob.glob(os.path.join('data/VNPL1', id, date, 'D', '*.json'))[0], 'rb')
+        import json
+        def get_name(json):
+            return json.get('name').split('.')[2]
+
+        vnp_time = list(map(get_name, json.load(vnp_json)['content']))
+        if tif_time not in vnp_time or 'IMG' not in tif_file:
+            continue
+        tif_filename_gee = tif_file.split('/')[-2]+'_'+tif_file.split('/')[-1][:-4]
         if tif_filename_gee not in img_list_gee:
             print('GEE file not exist{}'.format(tif_filename_gee))
             logger.info('GEE file not exist_{}'.format(tif_filename_gee))
@@ -70,5 +87,6 @@ def sanity_check_gee(dir_tiff):
 
 
 if __name__=='__main__':
-    sanity_check(dir_nc='data/VNPNC', dir_tiff='data/VNPIMGTIF')
-    # sanity_check_gee('E:\\viirs\\subset')
+    # sanity_check(dir_nc='data/VNPNC', dir_tiff='data/VNPIMGTIF')
+    # sanity_check_gee('data/subset')
+    sanity_check_region('quebec_fire_3')
