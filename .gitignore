@@ -5,3 +5,4 @@ log
 wget*
 venv
 archive
+*/__pycache__/

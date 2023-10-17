@@ -15,11 +15,24 @@ from datetime import timedelta
 import datetime
 from utils.utils import get_json_tasks, get_client_tasks, json_wrapper, client_wrapper, get_tasks, main_process_wrapper, \
     upload
-from utils.args import default_args
+from datetime import timedelta
+
+start_date = (datetime.datetime(2023, 9, 24))
+default_args = {
+    'owner': 'zhaoyutim',
+    'start_date': start_date,
+    'depends_on_past': False,
+    'email': ['zhaoyutim@gmail.com'],
+    'email_on_failure': True,
+    'email_on_retry': False,
+    'retries': 1,
+    'retry_delay': timedelta(minutes=5),
+}
 
 dag = DAG(
     'VIIRS_Night_Iband_process_and_upload_EU',
     default_args=default_args,
+    schedule_interval='0 10 * * *',
     description='A DAG for processing VIIRS night Iband images and upload to gee for US',
 )
 

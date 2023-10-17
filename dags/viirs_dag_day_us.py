@@ -12,14 +12,26 @@ from airflow import DAG
 from airflow.utils.dates import days_ago
 from airflow.operators.python_operator import PythonOperator
 from datetime import timedelta
-from utils.args import default_args
 from utils.utils import get_json_tasks, get_client_tasks, json_wrapper, client_wrapper, get_tasks, main_process_wrapper, \
     upload
 import datetime
+from datetime import timedelta
 
+start_date = (datetime.datetime(2023, 9, 24))
+default_args = {
+    'owner': 'zhaoyutim',
+    'start_date': start_date,
+    'depends_on_past': False,
+    'email': ['zhaoyutim@gmail.com'],
+    'email_on_failure': True,
+    'email_on_retry': False,
+    'retries': 1,
+    'retry_delay': timedelta(minutes=5),
+}
 dag = DAG(
     'VIIRS_day_Iband_process_and_upload_US',
     default_args=default_args,
+    schedule_interval='0 10 * * *',
     description='A DAG for processing VIIRS Iband images and upload to gee for US',
 )
 

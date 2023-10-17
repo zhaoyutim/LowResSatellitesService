@@ -79,6 +79,7 @@ if __name__ == '__main__':
             return dir_str.split('/')[-1][:10]
         target_dates = list(map(get_date, file))
         for i, target_id in enumerate(target_ids):
+
             if not os.path.exists(dir_subset):
                 os.mkdir(dir_subset)
             if not os.path.exists(os.path.join(dir_subset, target_id)):
@@ -108,7 +109,9 @@ if __name__ == '__main__':
                float(roi_arg.split(',')[3])]
         duration = datetime.datetime.strptime(end_date, '%Y-%m-%d') - datetime.datetime.strptime(start_date, '%Y-%m-%d')
         tasks=[]
-        target_id= 'Donnie_Creek_Fire'
+        
+        # Changes made here (TODO: Change this to whatever was there previously)
+        target_id= 'Alberta'
         if not os.path.exists(os.path.join(dir_subset, target_id)):
             os.mkdir(os.path.join(dir_subset, target_id))
         tasks = get_tasks(start_date, duration, target_id, roi, dn, utmzone, product_id, dir_nc, dir_tif, dir_subset)

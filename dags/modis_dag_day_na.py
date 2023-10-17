@@ -12,7 +12,6 @@ import rioxarray as rxr
 from prettyprinter import pprint
 from airflow import DAG
 from airflow.operators.python_operator import PythonOperator
-from utils.args import default_args
 import datetime
 
 from utils.utils import upload_hdf
@@ -61,10 +60,23 @@ CFG = {
         "BANDS": ["sur_refl_b01_1", "sur_refl_b02_1", "sur_refl_b03_1", "sur_refl_b04_1", "sur_refl_b07_1"]
     },
 }
+from datetime import timedelta
 
+start_date = (datetime.datetime(2023, 9, 24))
+default_args = {
+    'owner': 'zhaoyutim',
+    'start_date': start_date,
+    'depends_on_past': False,
+    'email': ['zhaoyutim@gmail.com'],
+    'email_on_failure': True,
+    'email_on_retry': False,
+    'retries': 1,
+    'retry_delay': timedelta(minutes=5),
+}
 dag = DAG(
     'MODIS_process_and_upload_NA',
     default_args=default_args,
+    schedule_interval='0 10 * * *',
     description='A DAG for processing North America MODIS images and upload to gee',
 )
 
@@ -87,10 +99,10 @@ def download_files(id, start_date, dir_data, collection_id, products_id, hh_list
     julian_day = datetime.datetime.strptime(start_date, '%Y-%m-%d').timetuple().tm_yday
     dir_data_with_id = dir_data.joinpath(id)
     dir_data_with_id.mkdir(exist_ok=True)
-    url_part = f"{collection_id}/{products_id}/{year}/{julian_day}/"
+    url_part = f"{collection_id}/{products_id}/{year}/{julian_day}"
     dir_data_with_id.joinpath(start_date).mkdir(exist_ok=True)
-    token = 'eyJ0eXAiOiJKV1QiLCJvcmlnaW4iOiJFYXJ0aGRhdGEgTG9naW4iLCJzaWciOiJlZGxqd3RwdWJrZXlfb3BzIiwiYWxnIjoiUlMyNTYifQ.eyJ0eXBlIjoiVXNlciIsInVpZCI6InpoYW95dXRpbSIsImV4cCI6MTY5Mjk0ODY4OSwiaWF0IjoxNjg3NzY0Njg5LCJpc3MiOiJFYXJ0aGRhdGEgTG9naW4ifQ.8VcF6eI2baAURBcKZn1Cca9xTTt5bMxMCnF9bfMaqH6GLiDMd-j3f35aTJikF1amrkRq_Mq9L-KFEUBdkOn-Qn3BFiLsxIvKIEjtvl02mGigYExtK5trxJOi4Vm3NBeZIGBjiFdOU1kjmJl-uu9o_lnWSH7xQBQc6uEJ8zrX3Z31nnel8DiwZIv1GN5R5ElUqce38oYk7xyymfzeBx94tEUi084gwuQtwTOvAc_Xly0ZQcBidJh_UKuZKCbxBgPOmwTlHPdrjN-FofSRIXx8M8CdMomJV0h9_SGxikF1r0dV-oPYDxA40vNhNMUepYYd1iGkeIFYwZUfZ5P87upZ-g'
-    # emhhb3l1dGltOmVtaGhiM2wxZEdsdFFHZHRZV2xzTG1OdmJRPT06MTYyNjQ0MTQyMTphMzhkYTcwMzc5NTg1M2NhY2QzYjY2NTU0ZWFkNzFjMGEwMTljMmJj
+    # token = 'eyJ0eXAiOiJKV1QiLCJvcmlnaW4iOiJFYXJ0aGRhdGEgTG9naW4iLCJzaWciOiJlZGxqd3RwdWJrZXlfb3BzIiwiYWxnIjoiUlMyNTYifQ.eyJ0eXBlIjoiVXNlciIsInVpZCI6InpoYW95dXRpbSIsImV4cCI6MTY5Mjk0ODY4OSwiaWF0IjoxNjg3NzY0Njg5LCJpc3MiOiJFYXJ0aGRhdGEgTG9naW4ifQ.8VcF6eI2baAURBcKZn1Cca9xTTt5bMxMCnF9bfMaqH6GLiDMd-j3f35aTJikF1amrkRq_Mq9L-KFEUBdkOn-Qn3BFiLsxIvKIEjtvl02mGigYExtK5trxJOi4Vm3NBeZIGBjiFdOU1kjmJl-uu9o_lnWSH7xQBQc6uEJ8zrX3Z31nnel8DiwZIv1GN5R5ElUqce38oYk7xyymfzeBx94tEUi084gwuQtwTOvAc_Xly0ZQcBidJh_UKuZKCbxBgPOmwTlHPdrjN-FofSRIXx8M8CdMomJV0h9_SGxikF1r0dV-oPYDxA40vNhNMUepYYd1iGkeIFYwZUfZ5P87upZ-g'
+    token = 'emhhb3l1dGltOmVtaGhiM2wxZEdsdFFHZHRZV2xzTG1OdmJRPT06MTYyNjQ0MTQyMTphMzhkYTcwMzc5NTg1M2NhY2QzYjY2NTU0ZWFkNzFjMGEwMTljMmJj'
     for hh in hh_list:
         for vv in vv_list:
             print(f"\nstart_date: {start_date}， h{hh}v{vv}")
@@ -107,7 +119,7 @@ def download_files(id, start_date, dir_data, collection_id, products_id, hh_list
                 # MOD09GA NRT from LANCE
                 # MOD09GA.A2022246.h00v08.061.2022247021401.NRT.hdf
                 command = "wget -e robots=off -m -np -R .html,.tmp -nH --cut-dirs=9 " + \
-                    f"\"https://nrt3.modaps.eosdis.nasa.gov/api/v2/content/archives/allData/{url_part}/{products_id}.A"+str(year)+f"{julian_day}.h{hh}v{vv}.061.NRT.hdf\" --header \"Authorization: Bearer {token}\" \
+                    f"\"https://nrt4.modaps.eosdis.nasa.gov/api/v2/content/archives/allData/{url_part}/{products_id}.A"+str(year)+f"{julian_day}.h{hh}v{vv}.061.NRT.hdf\" --header \"Authorization: Bearer {token}\" \
                         -P {dir_data_with_id.joinpath(start_date)}"
             if len(glob.glob(os.path.join(f"{dir_data_with_id}/{start_date}", f'{products_id}.A'+str(year)+f'{julian_day}.h{hh}v{vv}.061.NRT.hdf')))!=0:
                 print('HDF file exist')

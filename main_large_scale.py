@@ -111,7 +111,7 @@ if __name__ == '__main__':
         duration = datetime.datetime.strptime(end_date, '%Y-%m-%d') - datetime.datetime.strptime(start_date, '%Y-%m-%d')
         area_of_interest = 'W' + str(roi[0]) + ' ' + 'N' + str(roi[3]) + ' ' + 'E' + str(roi[2]) + ' ' + 'S' + str(
             roi[1])
-        id = 'Donnie_Creek_Fire'
+        id = 'Alberta'
         print('Currently processing id {}'.format(id))
         tasks = get_json_tasks(id, start_date, duration, area_of_interest, products_id, dn, dir_json, collection_id)
         tasks2 = get_client_tasks(id, start_date, duration, products_id, dn, dir_json, dir_nc, collection_id)
@@ -127,8 +127,6 @@ if __name__ == '__main__':
         df = pd.read_csv(filename)
         ids, start_dates, end_dates, bottom_lefts, top_rights = df['system:index'].values.astype(str), df['start_date'].values.astype(str), df['end_date'].values.astype(str), df['bottom_left'].values.astype(str), df['top_right'].values.astype(str)
         for i, id in enumerate(ids):
-            if i<8:
-                continue
             roi = (bottom_lefts[i] + top_rights[i]).replace('[', '').split(']')[0].split(', ')+(bottom_lefts[i] + top_rights[i]).replace('[', '').split(']')[1].split(', ')
             start_date = start_dates[i].split('T')[0]
             end_date = end_dates[i].split('T')[0]

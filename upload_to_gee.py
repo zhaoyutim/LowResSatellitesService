@@ -20,7 +20,7 @@ def upload_to_gcloud(file):
     print('finish uploading' + file_name)
 
 
-def upload_to_gee(file, day_night):
+def upload_to_gee(file, day_night, year):
     print('start uploading to gee')
     file_name = file.split('/')[-1]
     id = file.split('/')[-2]
@@ -28,21 +28,21 @@ def upload_to_gee(file, day_night):
     time = file.split('/')[-1][17:21]
     time_start = date + 'T' + time[:2] + ':' + time[2:] + ':00'
     if day_night=='D':
-        cmd = 'earthengine upload image --time_start ' + time_start + ' --asset_id=projects/proj5-dataset/assets/proj5_dataset/' + \
+        cmd = '/geoinfo_vol1/home/z/h/zhao2/mambaforge/envs/rioxarray_env/bin/earthengine upload image --time_start ' + time_start + ' --asset_id=projects/proj5-dataset-'+year+'/assets/proj5_dataset_day_'+year+'/' + \
               id+'_'+file_name[:-4] + ' --pyramiding_policy=sample gs://ai4wildfire/VNPPROJ5/'+id+'/' + file_name
     else:
-        cmd = 'earthengine upload image --time_start ' + time_start + ' --asset_id=projects/proj5-dataset/assets/proj5_dataset_night/' + \
+        cmd = '/geoinfo_vol1/home/z/h/zhao2/mambaforge/envs/rioxarray_env/bin/earthengine upload image --time_start ' + time_start + ' --asset_id=projects/proj5-dataset-'+year+'/assets/proj5_dataset_night_'+year+'/' + \
               id + '_' + file_name[
                          :-4] + ' --pyramiding_policy=sample gs://ai4wildfire/VNPPROJ5/' + id + '/' + file_name
     print(cmd)
     subprocess.call(cmd.split())
     print('Uploading in progress for image ' + time_start)
 
-def upload(file, day_night):
+def upload(file, day_night, year):
     upload_to_gcloud(file)
-    upload_to_gee(file, day_night)
+    upload_to_gee(file, day_night, year)
 
-def upload_in_parallel(import_all=True, day_night='D', filepath='data/subset'):
+def upload_in_parallel(import_all=True, day_night='D', mode='IMG', filepath='data/subset', year='2021'):
     if import_all:
         file_list = glob.glob(os.path.join(filepath, '*.tif'))
     else:
@@ -66,9 +66,9 @@ def upload_in_parallel(import_all=True, day_night='D', filepath='data/subset'):
             def get_name(json):
                 return json.get('name').split('.')[2]
             vnp_time = list(map(get_name, json.load(vnp_json)['content']))
-            if time not in vnp_time or 'IMG' not in file:
+            if time not in vnp_time or mode not in file:
                 continue
-            result = pool.apply_async(upload, (file, day_night))
+            result = pool.apply_async(upload, (file, day_night, year))
             results.append(result)
         results = [result.get() for result in results if result is not None]
 
@@ -89,13 +89,25 @@ def upload_by_log(filepath='data/subset'):
         tif_list = glob.glob(os.path.join(filepath, target_id, 'VNPIMG' + target_dates[i] + '*.tif'))
         for tif_file in tif_list:
             os.system('geeadd delete --id '+'projects/proj5-dataset/assets/proj5_dataset_night/'+target_id+'_'+tif_file.split('/')[-1][:-4])
-            upload(tif_file)
+            upload(tif_file, year)
 if __name__=='__main__':
-    ids = ['alberta_fire_3', 'alberta_fire_4',
-          'alberta_fire_5', 'alberta_fire_6', 'alberta_fire_7', 'alberta_fire_8', 'alberta_fire_9',
-          'alberta_fire_10', 'alberta_fire_11', 'alberta_fire_12', 'quebec_fire_0', 'quebec_fire_1',
-          'quebec_fire_2', 'quebec_fire_3']
-    for id in ids:
-        print(id)
-        upload_in_parallel(True, 'D', 'data/subset/'+id)
+    # ids = ['alberta_fire_0', 'alberta_fire_1', 'alberta_fire_2', 'alberta_fire_3', 'alberta_fire_4',
+    #       'alberta_fire_5', 'alberta_fire_6', 'alberta_fire_7', 'alberta_fire_8', 'alberta_fire_9',
+    #       'alberta_fire_10', 'alberta_fire_11', 'alberta_fire_12', 'quebec_fire_0', 'quebec_fire_1',
+    #       'quebec_fire_2', 'quebec_fire_3']
+    # import pandas as pd
+    # year = '2021'
+    # filename = 'roi/us_fire_' + year + '_out_new.csv'
+    # df = pd.read_csv(filename)
+    # df = df.sort_values(by=['Id'])
+    # ids, start_dates, end_dates, lons, lats = df['Id'].values.astype(str), df['start_date'].values.astype(str), df['end_date'].values.astype(str), df['lon'].values.astype(float), df['lat'].values.astype(float)
+    # ids = ['Alberta']
+    # print('year', year)
+    id = 'Alberta'
+    year = '2023'
+    # for id in ids:
+        # print(id)
+        # if 'AR' in id or 'AZ' in id or 'CA' in id or 'FL' in id:
+            # continue
+    upload_in_parallel(True, 'B', 'IMG', 'data/subset/'+id, year)
     # upload_by_log()

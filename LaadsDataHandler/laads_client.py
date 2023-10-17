@@ -2,9 +2,12 @@ import datetime
 import json
 import os
 import subprocess
+
+from requests.adapters import HTTPAdapter
 from simple_file_checksum import get_checksum
 
 import requests
+from urllib3 import Retry
 
 
 class LaadsClient:
@@ -44,9 +47,19 @@ class LaadsClient:
                 json_path = os.path.join(data_path, id, date, day_night)
                 if os.path.exists(os.path.join(json_path, date + '_' + product_id + '.json')):
                     print('Json already exist, update the Json')
-                    os.remove(os.path.join(json_path, date + '_' + product_id + '.json'))
+                    # os.remove(os.path.join(json_path, date + '_' + product_id + '.json'))
+                # Create a Retry object with the desired number of retries
+                retries = Retry(total=50, backoff_factor=0.1, status_forcelist=[500, 502, 503, 504])
 
-                response = requests.get(download_link, headers=self.header)
+                # Create an HTTPAdapter with the Retry object
+                adapter = HTTPAdapter(max_retries=retries)
+
+                # Create a session and mount the adapter
+                session = requests.Session()
+                session.mount("http://", adapter)
+                session.mount("https://", adapter)
+
+                response = session.get(download_link, headers=self.header)
                 if response.status_code != 200:
                     raise ConnectionRefusedError
                 else:

@@ -90,7 +90,7 @@ def upload_to_gee(file, gs_path='gs://ai4wildfire/VNPPROJ5/', asset_id='projects
     time = file.split('/')[-1][17:21]
     gs_path += id + '/' + file_name
     time_start = date + 'T' + time[:2] + ':' + time[2:] + ':00'
-    cmd = 'earthengine upload image --force --time_start ' + time_start + ' --asset_id='+asset_id + \
+    cmd = '/geoinfo_vol1/home/z/h/zhao2/mambaforge/envs/rioxarray_env/bin/earthengine upload image --force --time_start ' + time_start + ' --asset_id='+asset_id + \
           id+'_'+file_name[:-4] + ' --pyramiding_policy=sample '+gs_path
     print(cmd)
     subprocess.call(cmd.split())
@@ -124,7 +124,7 @@ def upload_to_gee_hdf(file, gs_path='gs://ai4wildfire/VNPPROJ5/', asset_id='proj
     else:
         raise 'product_id not found'
 
-    cmd = 'earthengine upload image --force --time_start ' + time_start + ' --asset_id='+asset_id + \
+    cmd = '/geoinfo_vol1/home/z/h/zhao2/mambaforge/envs/rioxarray_env/bin/earthengine upload image --force --time_start ' + time_start + ' --asset_id='+asset_id + \
           product_id+'_'+id+'_'+position+'_'+start_date + ' --pyramiding_policy=sample '+gs_path
     print(cmd)
     subprocess.call(cmd.split())

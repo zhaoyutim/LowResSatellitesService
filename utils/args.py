@@ -1,7 +1,7 @@
 from datetime import timedelta
 from datetime import datetime
 
-start_date = (datetime(2023, 6, 20, 0, 0, 0))
+start_date = (datetime(2023, 7, 3))
 default_args = {
     'owner': 'zhaoyutim',
     'start_date': start_date,
@@ -11,5 +11,5 @@ default_args = {
     'email_on_retry': False,
     'retries': 1,
     'retry_delay': timedelta(minutes=5),
-    'schedule_interval': timedelta(days=1),
+    'schedule_interval': '0 */8 * * *',
 }

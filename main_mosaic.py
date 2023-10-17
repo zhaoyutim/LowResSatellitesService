@@ -54,11 +54,14 @@ def combine_tiff(file1_path, file2_path):
 
 
 if __name__=='__main__':
-    id = 'US'
+    # Changed the id
+    id = 'New_BC_Alberta_danny'
     if not os.path.exists(os.path.join('data/tif_dataset', id)):
         os.mkdir(os.path.join('data/tif_dataset', id))
-    start_date = '2023-05-21'
-    end_date = '2023-05-30'
+    # Changing the date
+    start_date = '2023-05-12'
+    end_date = '2023-07-01'
+    
     duration = datetime.datetime.strptime(end_date, '%Y-%m-%d') - datetime.datetime.strptime(start_date, '%Y-%m-%d')
     for k in range(duration.days):
         date = (datetime.datetime.strptime(start_date, '%Y-%m-%d') + datetime.timedelta(k)).strftime('%Y-%m-%d')

@@ -5,12 +5,35 @@ import time
 from logging.handlers import RotatingFileHandler
 import ee
 
+from main_mosaic import read_tiff
+import numpy as np
+
 def sanity_check_region(id, dir_subset='data/subset'):
     file_list_subset_mod = glob.glob(os.path.join(dir_subset,id, '*MOD*.tif'))
     file_list_subset_img = glob.glob(os.path.join(dir_subset, id, '*IMG*.tif'))
+    file_list_subset_img.sort()
+    file_list_subset_mod.sort()
     for file in file_list_subset_mod:
         if file.replace('MOD','IMG') not in file_list_subset_img:
-            print(file)
+            print('Found missing '+id+file)
+
+    for file in file_list_subset_img:
+        array, _ = read_tiff(file)
+        if np.nanmean(array) == 0 or np.isnan(np.nanmean(array)):
+            os.remove(file)
+            print(file + ' empty')
+        if array.shape[0]!=5 and array.shape[0]!=2:
+            if os.path.exists(file):
+                os.remove(file)
+            print(file+' band incomplete')
+
+    for file in file_list_subset_mod:
+        array, _ = read_tiff(file)
+        if np.nanmean(array) == 0 or np.isnan(np.nanmean(array)):
+            os.remove(file)
+            print(file + ' empty')
+
+    print('#Night images'+str(len(file_list_subset_img)-len(file_list_subset_mod)))
 
 
 def sanity_check_nc_tif(dir_nc='E:\\viirs\\VNPNC', dir_tiff='G:\\viirs\\VNPIMGTIF'):
@@ -85,8 +108,16 @@ def sanity_check_gee(dir_tiff):
 
     print('finish')
 
-
 if __name__=='__main__':
     # sanity_check(dir_nc='data/VNPNC', dir_tiff='data/VNPIMGTIF')
     # sanity_check_gee('data/subset')
-    sanity_check_region('quebec_fire_3')
+    import pandas as pd
+    year = '2021'
+    filename = 'roi/us_fire_' + year + '_out_new.csv'
+    df = pd.read_csv(filename)
+    df = df.sort_values(by=['Id'])
+    ids, start_dates, end_dates, lons, lats = df['Id'].values.astype(str), df['start_date'].values.astype(str), df['end_date'].values.astype(str), df['lon'].values.astype(float), df['lat'].values.astype(float)
+    # ids = ['Alberta']
+    for id in ids:
+        print(id)
+        sanity_check_region(id)

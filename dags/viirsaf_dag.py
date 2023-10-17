@@ -9,15 +9,28 @@ sys.path.insert(0,'/geoinfo_vol1/home/z/h/zhao2/LowResSatellitesService/')
 from pathlib import Path
 from prettyprinter import pprint
 from airflow import DAG
-from airflow.utils.dates import days_ago
 from airflow.operators.python_operator import PythonOperator
-from datetime import timedelta
 from utils.utils import download_af_from_firms
-from utils.args import default_args
+from datetime import timedelta
+import datetime
+
+
+start_date = (datetime.datetime(2023, 9, 24))
+default_args = {
+    'owner': 'zhaoyutim',
+    'start_date': start_date,
+    'depends_on_past': False,
+    'email': ['zhaoyutim@gmail.com'],
+    'email_on_failure': True,
+    'email_on_retry': False,
+    'retries': 1,
+    'retry_delay': timedelta(minutes=5),
+}
 
 dag = DAG(
     'VIIRSAF_process_and_upload',
     default_args=default_args,
+    schedule_interval='0 10 * * *',
     description='A DAG for processing VIIIRS Active Fire csv and upload to gee',
 )
 
