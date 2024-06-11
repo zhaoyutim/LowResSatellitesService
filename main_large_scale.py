@@ -140,5 +140,26 @@ if __name__ == '__main__':
                 results = list(pool.imap_unordered(json_wrapper, tasks))
             with multiprocessing.Pool(processes=4) as pool:
                 results = list(pool.imap_unordered(client_wrapper, tasks2))
+    elif mode == 'location':
+        import yaml
+        with open("roi/configuration.yml", "r", encoding="utf8") as f:
+            config = yaml.load(f, Loader=yaml.FullLoader)
+        locations = ['thomas_fire', 'kincade_fire']
+        for location in locations:
+            print(location)
+            rectangular_size = config.get('rectangular_size')
+            latitude = config.get(location).get('latitude')
+            longitude = config.get(location).get('longitude')
+            start_date = config.get(location).get('start').strftime('%Y-%m-%d')
+            roi = [longitude - rectangular_size, latitude - rectangular_size,
+                 longitude + rectangular_size, latitude + rectangular_size]
+            area_of_interest = 'W' + str(roi[0]) + ' ' + 'N' + str(roi[3]) + ' ' + 'E' + str(roi[2]) + ' ' + 'S' + str(roi[1])
+            duration = datetime.timedelta(days=1)
+            tasks = get_json_tasks(location, start_date, duration, area_of_interest, products_id, dn, dir_json, collection_id)
+            tasks2 = get_client_tasks(location, start_date, duration, products_id, dn, dir_json, dir_nc, collection_id)
+            with multiprocessing.Pool(processes=4) as pool:
+                results = list(pool.imap_unordered(json_wrapper, tasks))
+            with multiprocessing.Pool(processes=4) as pool:
+                results = list(pool.imap_unordered(client_wrapper, tasks2))
     else:
         raise('No Support Mode')

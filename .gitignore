@@ -6,3 +6,4 @@ wget*
 venv
 archive
 */__pycache__/
+.vscode

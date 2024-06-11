@@ -1,38 +1,98 @@
 output_bucket: zhaoyutimtest
 
-rectangular_size_x: 13
-rectangular_size_y: 6
+rectangular_size: 1
 
 LNU_lighting_complex:
   longitude: -122.237303
   latitude: 38.593546
-  start: 2020-08-18
-  end: 2020-09-30
+  start: 2020-08-08
+  end: 2020-09-16
 
 SCU_lighting_complex:
   longitude: -121.4389
   latitude: 37.3526
-  start: 2020-08-14
-  end: 2020-10-01
+  start: 2020-08-08
+  end: 2020-09-16
 
 CZU_lighting_complex:
   longitude: -122.2801549
   latitude: 37.09736605
-  start: 2020-08-16
-  end: 2020-09-22
+  start: 2020-08-08
+  end: 2020-09-16
 
 August_complex:
   longitude: -122.97
   latitude: 39.8686
-  start: 2020-08-17
-  end: 2020-09-23
+  start: 2020-08-08
+  end: 2020-09-16
 
 North_complex_fire:
-  longitude: -120.12
-  latitude: 39.69
-  start: 2020-08-14
-  end: 2020-12-03
+  longitude: -121.01
+  latitude: 39.78
+  start: 2020-08-08
+  end: 2020-09-16
 
+River_fire:
+  longitude: -121.6146
+  latitude: 36.495
+  start: 2020-08-16
+  end: 2020-09-04
+
+Anonymous_fire1:
+  longitude: -118.501
+  latitude: 36.189
+  start: 2020-08-08
+  end: 2020-09-16
+Anonymous_fire2:
+  longitude: -105.651
+  latitude: 40.642
+  start: 2020-08-08
+  end: 2020-09-16
+Anonymous_fire3:
+  longitude: -117.688
+  latitude: 49.59
+  start: 2020-08-08
+  end: 2020-09-16
+Anonymous_fire4:
+  longitude: -108.5503
+  latitude: 39.4187
+  start: 2020-08-06
+  end: 2020-09-16
+Anonymous_fire5:
+  longitude: -110.6322
+  latitude: 40.601
+  start: 2020-08-08
+  end: 2020-09-16
+Anonymous_fire6:
+  longitude: -116.7698
+  latitude: 44.7444
+  start: 2020-08-08
+  end: 2020-09-16
+Anonymous_fire7:
+  longitude: -117.688
+  latitude: 49.59
+  start: 2020-08-08
+  end: 2020-09-16
+Anonymous_fire8:
+  longitude: -115.4528
+  latitude: 44.7903
+  start: 2020-08-08
+  end: 2020-09-16
+Hubo_fire:
+  longitude: -123.4029
+  latitude: 41.1121
+  start: 2020-08-16
+  end: 2020-09-04
+Anonymous_fire9:
+  longitude: -113.158
+  latitude: 48.1459
+  start: 2020-08-08
+  end: 2020-09-16
+Anonymous_fire10:
+  longitude: -120.5539
+  latitude: 42.5911
+  start: 2020-08-08
+  end: 2020-09-16
 Glass_fire:
   longitude: -122.496
   latitude: 38.565
@@ -42,20 +102,20 @@ Glass_fire:
 Beachie_wildfire:
   longitude: -122.138214
   latitude: 44.745123
-  start: 2020-09-02
-  end: 2020-09-14
+  start: 2020-08-08
+  end: 2020-09-16
 
 Beachie_wildfire_2:
   longitude: -122.23984
   latitude: 45.102946
-  start: 2020-09-02
-  end: 2020-09-14
+  start: 2020-08-08
+  end: 2020-09-16
 
 Holiday_farm_wildfire:
   longitude: -122.49
   latitude: 44.15
-  start: 2020-09-07
-  end: 2020-09-14
+  start: 2020-08-06
+  end: 2020-09-15
 
 Cold_spring_fire:
   longitude: -119.5725
@@ -67,13 +127,30 @@ Doctor_creek_fire:
   longitude: -116.09788
   latitude: 50.0911
   start: 2020-08-18
-  end: 2020-08-24
+  end: 2020-09-21
 
 creek_fire:
   longitude: -119.3
   latitude: 37.2
   start: 2020-09-05
-  end: 2020-09-10
+  end: 2020-10-25
+
+dixie_fire:
+  longitude: -121.419
+  latitude: 39.81
+  start: 2021-07-14
+  end: 2021-08-30
+lytton_fire:
+  longitude: -121.5659
+  latitude: 50.28
+  start: 2021-06-29
+  end: 2021-08-30
+
+sparks_lake_fire:
+  longitude: -120.79
+  latitude: 50.92
+  start: 2021-06-28
+  end: 2021-08-30
 
 hanninge_fire:
   longitude: 18.039856
@@ -133,19 +210,13 @@ chuckegg_creek_fire:
   longitude: -117.42
   latitude: 58.38
   start: 2019-05-15
-  end: 2019-05-25
+  end: 2019-05-22
 
 mexico_fire:
   longitude: -102.73
   latitude: 18.566
   start: 2020-05-08
   end: 2020-05-14
-
-brazil_fire:
-  longitude: -52.097
-  latitude: -8.240
-  start: 2020-09-02
-  end: 2020-09-10
 
 bond_fire:
   longitude: -117.67
@@ -193,7 +264,7 @@ christie_mountain:
   longitude: -119.54
   latitude: 49.364
   start: 2020-08-18
-  end: 2020-09-30
+  end: 2020-09-09
 
 bush_fire:
   longitude: -111.564
@@ -235,7 +306,7 @@ camp_fire:
   longitude: -121.43
   latitude: 39.81
   start: 2018-11-08
-  end: 2018-11-10
+  end: 2018-11-25
 
 tubbs_fire:
   longitude: -122.628
@@ -246,14 +317,14 @@ tubbs_fire:
 carr_fire:
   longitude: -122.62
   latitude: 40.65
-  start: 2018-07-30
-  end: 2018-07-25
+  start: 2018-07-23
+  end: 2018-08-25
 
 magee_fire:
   longitude: -123.22
   latitude: 49.88
   start: 2020-04-15
-  end: 2020-04-16
+  end: 2020-04-22
 
 black_angus_creek_wildfire:
   longitude: -128.7
@@ -265,13 +336,13 @@ eagle_bluff_fire:
   longitude: -119.50
   latitude: 49.42
   start: 2019-08-05
-  end: 2019-08-15
+  end: 2019-08-10
 
 tagish_lake_fire:
   longitude: -134.35
   latitude: 59.43
   start: 2019-08-03
-  end: 2019-08-10
+  end: 2019-08-18
 
 richter_creek_fire:
   longitude: -119.66
@@ -283,12 +354,12 @@ richter_mountain_fire:
   longitude: -119.70
   latitude: 49.06
   start: 2019-07-26
-  end: 2019-07-30
+  end: 2019-08-30
 
 Karbole_fire:
   longitude: 15.13
   latitude: 61.87
-  start: 2018-07-01
+  start: 2018-07-14
   end: 2018-08-10
 
 N71114:
@@ -298,31 +369,128 @@ N71114:
   end: 2020-08-30
   firms_time: 2020-08-19T08:36
 
-N31179:
+V31179:
   longitude: -122.53
   latitude: 50.22
   start: 2020-08-17
   end: 2020-08-30
   firms_time: 2020-08-18T08:54
 
-N51227:
+V51227:
   longitude: -124.53
   latitude: 50.84
   start: 2020-08-17
   end: 2020-08-30
   firms_time: 2020-08-17T20:45
 
-sparks_lake_fire:
-  longitude: -120.79
-  latitude: 50.92
-  start: 2021-06-28
-  end: 2021-08-30
+G41607:
+  longitude: -124.3
+  latitude: 53.35
+  start: 2018-07-30
+  end: 2018-09-06
+
+G80340:
+  longitude: -121.6
+  latitude: 57.1
+  start: 2018-05-22
+  end: 2018-06-04
+
+G82215:
+  longitude: -121.0
+  latitude: 57.4
+  start: 2018-08-02
+  end: 2018-08-23
+
+R12068:
+  longitude: -126.2
+  latitude: 53.2
+  start: 2018-09-03
+  end: 2018-09-29
+
+VA1787:
+  longitude: -126.0
+  latitude: 52.8
+  start: 2018-07-31
+  end: 2018-09-01
+
+R21721:
+  longitude: -126.5
+  latitude: 54.0
+  start: 2018-07-31
+  end: 2018-08-30
+
+R11498:
+  longitude: -125.2
+  latitude: 54.0
+  start: 2018-07-27
+  end: 2018-08-31
+
+R92033:
+  longitude: -128.3
+  latitude: 59.6
+  start: 2018-07-30
+  end: 2018-08-24
+
+R91947:
+  longitude: -131.0
+  latitude: 58.0
+  start: 2018-08-01
+  end: 2018-09-02
+
+brazil_1214:
+  longitude: -51.61
+  latitude: -9.894
+  start: 2020-09-05
+  end: 2020-09-07
+
+brazil_668:
+  longitude: -54.496
+  latitude: -10.52
+  start: 2020-09-01
+  end: 2020-09-03
+
+brazil_675:
+  longitude: -53.83
+  latitude: -10.80
+  start: 2020-08-31
+  end: 2020-09-02
+
+brazil_1341:
+  longitude: -54.07
+  latitude: -12.81
+  start: 2020-09-02
+  end: 2020-09-04
+
+brazil_728:
+  longitude: -52.097
+  latitude: -8.240
+  start: 2020-09-02
+  end: 2020-09-04
+
+cold_spring:
+  longitude: -119.49
+  latitude: 48.29
+  start: 2020-09-07
+  end: 2020-09-09
+
+beachie_creek:
+  longitude: -121.62
+  latitude: 44.77
+  start: 2020-08-17
+  end: 2020-08-19
+
+swedish_fire:
+  longitude: 14.5155
+  latitude: 61.7976
+  start: 2018-07-14
+  end: 2018-07-18
+
 
 kincade_fire:
   longitude: -122.78
   latitude: 38.79
-  start: 2019-10-23
-  end: 2019-11-06
+  start: 2019-10-31
+  end: 2019-11-01
 
 walker_fire:
   longitude: -120.68
@@ -330,35 +498,30 @@ walker_fire:
   start: 2019-09-04
   end: 2019-10-24
 
+
 thomas_fire:
   longitude: -119.09
   latitude: 34.42
-  start: 2017-04-12
-  end: 2017-04-22
+  start: 2017-12-08
+  end: 2017-12-09
 
-Africa:
-  longitude: 35.78
-  latitude: -17.66
-  start: 2022-03-04
-  end: 2022-03-06
+sydney_fire:
+  longitude: 150.116
+  latitude: -35.50
+  start: 2019-11-26
+  end: 2019-12-06
 
 mosquito_fire:
   longitude: -120.74
   latitude: 39.00
-  start: 2022-10-17
-  end: 2022-09-20
+  start: 2022-09-03
+  end: 2022-09-12
 
 calfcanyon_fire:
   longitude: -105.50
   latitude: 35.76
   start: 2022-04-05
-  end: 2022-04-15
-
-mckinney_fire:
-  longitude: -122.89
-  latitude: 41.825
-  start: 2022-07-28
-  end: 2022-04-15
+  end: 2022-04-07
 
 double_creek_fire:
   longitude: -116.73
@@ -366,22 +529,14 @@ double_creek_fire:
   start: 2022-08-29
   end: 2022-09-15
 
+mckinney_fire:
+  longitude: -122.89
+  latitude: 41.825
+  start: 2022-07-28
+  end: 2022-04-15
+
 cedar_creek_fire:
   longitude: -122.13
   latitude: 43.733
   start: 2022-07-31
   end: 2022-09-15
-
-
-cyprus:
-  lon: 33.18
-  lat: 34.84
-  start: 2021-07-02
-  end: 2021-07-05
-
-kamloop:
-  lon: -121.47
-  lat: 51.00
-  start: 2021-07-26
-  end: 2021-07-27
->>>>>>> 869e18dc110b0873b0576d7d58ece9b08dbf01d8

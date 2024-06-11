@@ -28,7 +28,7 @@ if __name__ == '__main__':
     for i in range(len(args.dn)):
         dn.append(args.dn[i])
     utmzone = '4326'
-    filename = 'roi/us_fire_' + year + '_out_new.csv'
+    
 
     if platform.system()=='Windows':
         dir_nc = 'G:\\viirs\\VNPNC'
@@ -48,6 +48,7 @@ if __name__ == '__main__':
 
 
     if mode == 'csv':
+        filename = 'roi/us_fire_' + year + '_out_new.csv'
         df = pd.read_csv(filename)
         df = df.sort_values(by=['Id'])
         ids, start_dates, end_dates, lons, lats = df['Id'].values.astype(str), df['start_date'].values.astype(str), df[
@@ -137,6 +138,33 @@ if __name__ == '__main__':
             if not os.path.exists(os.path.join(dir_subset, id)):
                 os.mkdir(os.path.join(dir_subset, id))
             tasks = get_tasks(start_date, duration, id, roi, dn, utmzone, product_id, dir_nc, dir_tif,
+                              dir_subset)
+
+            with multiprocessing.Pool(processes=4) as pool:
+                results = list(pool.imap_unordered(main_process_wrapper, tasks))
+            print(results)
+    elif mode == 'location':
+        import yaml
+        with open("roi/configuration.yml", "r", encoding="utf8") as f:
+            config = yaml.load(f, Loader=yaml.FullLoader)
+        locations = ['thomas_fire', 'kincade_fire']
+        # locations = ['sparks_lake_fire', 'lytton_fire', 'chuckegg_creek_fire', 'swedish_fire',
+        #               'sydney_fire','thomas_fire','tubbs_fire','carr_fire', 'camp_fire', 'kincade_fire',
+        #               'creek_fire','blue_ridge_fire', 'dixie_fire', 'mosquito_fire', 'calfcanyon_fire']
+        for location in locations:
+            print(location)
+            rectangular_size = config.get('rectangular_size')
+            latitude = config.get(location).get('latitude')
+            longitude = config.get(location).get('longitude')
+            start_date = config.get(location).get('start').strftime('%Y-%m-%d')
+            roi = [longitude - rectangular_size, latitude - rectangular_size,
+                 longitude + rectangular_size, latitude + rectangular_size]
+            area_of_interest = 'W' + str(roi[0]) + ' ' + 'N' + str(roi[3]) + ' ' + 'E' + str(roi[2]) + ' ' + 'S' + str(roi[1])
+            duration = datetime.timedelta(days=1)
+            print('Currently processing id {}'.format(location))
+            if not os.path.exists(os.path.join(dir_subset, location)):
+                os.mkdir(os.path.join(dir_subset, location))
+            tasks = get_tasks(start_date, duration, location, roi, dn, utmzone, product_id, dir_nc, dir_tif,
                               dir_subset)
 
             with multiprocessing.Pool(processes=4) as pool:

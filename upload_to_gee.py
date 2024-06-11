@@ -95,19 +95,25 @@ if __name__=='__main__':
     #       'alberta_fire_5', 'alberta_fire_6', 'alberta_fire_7', 'alberta_fire_8', 'alberta_fire_9',
     #       'alberta_fire_10', 'alberta_fire_11', 'alberta_fire_12', 'quebec_fire_0', 'quebec_fire_1',
     #       'quebec_fire_2', 'quebec_fire_3']
-    # import pandas as pd
-    # year = '2021'
-    # filename = 'roi/us_fire_' + year + '_out_new.csv'
-    # df = pd.read_csv(filename)
-    # df = df.sort_values(by=['Id'])
-    # ids, start_dates, end_dates, lons, lats = df['Id'].values.astype(str), df['start_date'].values.astype(str), df['end_date'].values.astype(str), df['lon'].values.astype(float), df['lat'].values.astype(float)
+    import pandas as pd
+    year = '2017'
+    filename = 'roi/us_fire_' + year + '_out_new.csv'
+    df = pd.read_csv(filename)
+    df = df.sort_values(by=['Id'])
+    ids, start_dates, end_dates, lons, lats = df['Id'].values.astype(str), df['start_date'].values.astype(str), df['end_date'].values.astype(str), df['lon'].values.astype(float), df['lat'].values.astype(float)
     # ids = ['Alberta']
     # print('year', year)
-    id = 'Alberta'
-    year = '2023'
+    # id = 'Alberta'
+    # year = '2023'
     # for id in ids:
         # print(id)
         # if 'AR' in id or 'AZ' in id or 'CA' in id or 'FL' in id:
             # continue
-    upload_in_parallel(True, 'B', 'IMG', 'data/subset/'+id, year)
+    ids = ['thomas_fire', 'kincade_fire']
+    # 'sparks_lake_fire', 'lytton_fire', 'chuckegg_creek_fire', 'swedish_fire',
+    #     'sydney_fire','thomas_fire','tubbs_fire','carr_fire', 'camp_fire', 'kincade_fire',
+    #     'creek_fire','blue_ridge_fire', 'dixie_fire', 'mosquito_fire', 'calfcanyon_fire']
+    year='af'
+    for id in ids:
+        upload_in_parallel(True, 'D', 'IMG', 'data/subset/'+id, year)
     # upload_by_log()
