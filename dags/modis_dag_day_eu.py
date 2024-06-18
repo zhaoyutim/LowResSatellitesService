@@ -1,10 +1,9 @@
 import glob
 import os
-
-os.chdir('/geoinfo_vol1/home/z/h/zhao2/LowResSatellitesService/')
 import sys
-sys.path.insert(0,'/geoinfo_vol1/home/z/h/zhao2/LowResSatellitesService/')
-
+from pathlib import Path
+root_path = str(Path(__file__).resolve().parents[1]) + "/"
+sys.path.insert(0,root_path)
 
 import datetime
 import multiprocessing
@@ -14,78 +13,21 @@ import rioxarray as rxr
 from prettyprinter import pprint
 from airflow import DAG
 from airflow.utils.dates import days_ago
-from airflow.operators.python_operator import PythonOperator
+from airflow.operators.python import PythonOperator
 from datetime import timedelta
 from utils.utils import upload_hdf
+from utils import config
 import datetime
 
-''' Configuration '''
-CFG = {
-    'VNP09GA': {
-        "products_id": "VNP09GA",
-        "collection_id": '5000',
-        "eeImgColName": "VIIRS_NRT",
-        "format": '.h5',
-        "BANDS": ["M3", "M4", "M5", "M7", "M10", "M11", "QF2"]
-    },
-
-    'VNP09_NRT': {
-        "products_id": "VNP09_NRT",
-        "collection_id": '5000',
-        "eeImgColName": "VIIRS_NRT",
-        "format": '.hdf',
-        "BANDS": [
-            "375m Surface Reflectance Band I1",
-            "375m Surface Reflectance Band I2",
-            "375m Surface Reflectance Band I1"
-        ]
-    },
-
-    'MOD09GA': {
-        "products_id": "MOD09GA",
-        "collection_id": '61',
-        "eeImgColName": "MODIS_NRT",
-        "format": '.hdf',
-        "BANDS": [
-            "sur_refl_b01_1",
-            "sur_refl_b02_1",
-            # "sur_refl_b03_1",
-            # "sur_refl_b04_1",
-            "sur_refl_b07_1"
-        ]
-    },
-
-    'MOD02HKM': {
-        "products_id": "MOD02HKM",
-        "collection_id": '61',
-        "eeImgColName": "MODIS_NRT",
-        "format": '.hdf',
-        "BANDS": ["sur_refl_b01_1", "sur_refl_b02_1", "sur_refl_b03_1", "sur_refl_b04_1", "sur_refl_b07_1"]
-    },
-}
-from datetime import timedelta
-
-start_date = (datetime.datetime(2023, 9, 24))
-default_args = {
-    'owner': 'zhaoyutim',
-    'start_date': start_date,
-    'depends_on_past': False,
-    'email': ['zhaoyutim@gmail.com'],
-    'email_on_failure': True,
-    'email_on_retry': False,
-    'retries': 1,
-    'retry_delay': timedelta(minutes=5),
-
-}
 dag = DAG(
     'MODIS_process_and_upload_EU',
-    default_args=default_args,
+    default_args=config.default_args,
     schedule_interval='0 10 * * *',
     description='A DAG for processing Europe MODIS images and upload to gee',
 )
 
-dir_data = Path('/geoinfo_vol1/home/z/h/zhao2/LowResSatellitesService/data/MOD09GA')
-dir_tif = Path('/geoinfo_vol1/home/z/h/zhao2/LowResSatellitesService/data/MOD09GATIF')
+dir_data = Path(root_path + 'data/MOD09GA')
+dir_tif = Path(root_path + 'data/MOD09GATIF')
 dn = ['D']
 id = 'EU'
 utmzone = '4326'
@@ -93,13 +35,11 @@ roi_arg = '-138,48,-109,60'
 # Europe
 hh_list = ['17', '18', '19', '20', '21', '22', '23']
 vv_list = ['02', '03', '04', '05']
-SOURCE = edict(CFG['MOD09GA'])
+SOURCE = edict(config.modis_config['MOD09GA'])
 products_id = SOURCE.products_id
 collection_id = SOURCE.collection_id
 asset_id = 'projects/ee-eo4wildfire/assets/MODIS_EU/'
-token = 'eyJ0eXAiOiJKV1QiLCJvcmlnaW4iOiJFYXJ0aGRhdGEgTG9naW4iLCJzaWciOiJlZGxqd3RwdWJrZXlfb3BzIiwiYWxnIjoiUlMyNTYifQ.eyJ0eXBlIjoiVXNlciIsInVpZCI6InpoYW95dXRpbSIsImV4cCI6MTY5Mjk0ODY4OSwiaWF0IjoxNjg3NzY0Njg5LCJpc3MiOiJFYXJ0aGRhdGEgTG9naW4ifQ.8VcF6eI2baAURBcKZn1Cca9xTTt5bMxMCnF9bfMaqH6GLiDMd-j3f35aTJikF1amrkRq_Mq9L-KFEUBdkOn-Qn3BFiLsxIvKIEjtvl02mGigYExtK5trxJOi4Vm3NBeZIGBjiFdOU1kjmJl-uu9o_lnWSH7xQBQc6uEJ8zrX3Z31nnel8DiwZIv1GN5R5ElUqce38oYk7xyymfzeBx94tEUi084gwuQtwTOvAc_Xly0ZQcBidJh_UKuZKCbxBgPOmwTlHPdrjN-FofSRIXx8M8CdMomJV0h9_SGxikF1r0dV-oPYDxA40vNhNMUepYYd1iGkeIFYwZUfZ5P87upZ-g'
-token = 'emhhb3l1dGltOmVtaGhiM2wxZEdsdFFHZHRZV2xzTG1OdmJRPT06MTYyNjQ0MTQyMTphMzhkYTcwMzc5NTg1M2NhY2QzYjY2NTU0ZWFkNzFjMGEwMTljMmJj'
-print(dir_data)
+
 def download_files(id, start_date, dir_data, collection_id, products_id, hh_list=['10', '11'], vv_list =['03']):
     year = start_date[:4]
     julian_day = datetime.datetime.strptime(start_date, '%Y-%m-%d').timetuple().tm_yday
@@ -116,14 +56,14 @@ def download_files(id, start_date, dir_data, collection_id, products_id, hh_list
                 # VNP09GA_NRT
                 filename = 'VNP09GA_NRT.A"+str(year)+f"{julian_day}.h{hh}v{vv}.001.*.h5'
                 command = "wget -e robots=off -m -np -R .html,.tmp -nH --cut-dirs=9 " + \
-                    f"\"https://ladsweb.modaps.eosdis.nasa.gov/archive/allData/{url_part}/VNP09GA_NRT.A"+str(year)+f"{julian_day}.h{hh}v{vv}.001.h5\" --header \"Authorization: Bearer {token}\" \
+                    f"\"https://ladsweb.modaps.eosdis.nasa.gov/archive/allData/{url_part}/VNP09GA_NRT.A"+str(year)+f"{julian_day}.h{hh}v{vv}.001.h5\" --header \"Authorization: Bearer {config.modis_token}\" \
                         -P {dir_data_with_id.joinpath(start_date)}"
 
             if products_id in ['MOD09GA']:
                 # MOD09GA NRT from LANCE
                 # MOD09GA.A2022246.h00v08.061.2022247021401.NRT.hdf
                 command = "wget -e robots=off -m -np -R .html,.tmp -nH --cut-dirs=9 " + \
-                    f"\"https://nrt4.modaps.eosdis.nasa.gov/api/v2/content/archives/allData/{url_part}/{products_id}.A"+str(year)+f"{julian_day}.h{hh}v{vv}.061.NRT.hdf\" --header \"Authorization: Bearer {token}\" \
+                    f"\"https://nrt4.modaps.eosdis.nasa.gov/api/v2/content/archives/allData/{url_part}/{products_id}.A"+str(year)+f"{julian_day}.h{hh}v{vv}.061.NRT.hdf\" --header \"Authorization: Bearer {config.modis_token}\" \
                         -P {dir_data_with_id.joinpath(start_date)}"
             if len(glob.glob(os.path.join(f"{dir_data_with_id}/{start_date}", f'{products_id}.A'+str(year)+f'{julian_day}.h{hh}v{vv}.061.NRT.hdf')))!=0:
                 print('HDF file exist')

@@ -1,35 +1,19 @@
 import os
 import subprocess
-
-
-os.chdir('/geoinfo_vol1/home/z/h/zhao2/LowResSatellitesService/')
 import sys
-sys.path.insert(0,'/geoinfo_vol1/home/z/h/zhao2/LowResSatellitesService/')
-
 from pathlib import Path
+root_path = str(Path(__file__).resolve().parents[1]) + "/"
+sys.path.insert(0,root_path)
+
 from prettyprinter import pprint
 from airflow import DAG
-from airflow.operators.python_operator import PythonOperator
+from airflow.operators.python import PythonOperator
 from utils.utils import download_af_from_firms
-from datetime import timedelta
-import datetime
-
-
-start_date = (datetime.datetime(2023, 9, 24))
-default_args = {
-    'owner': 'zhaoyutim',
-    'start_date': start_date,
-    'depends_on_past': False,
-    'email': ['zhaoyutim@gmail.com'],
-    'email_on_failure': True,
-    'email_on_retry': False,
-    'retries': 1,
-    'retry_delay': timedelta(minutes=5),
-}
+from utils import config
 
 dag = DAG(
     'VIIRSAF_process_and_upload',
-    default_args=default_args,
+    default_args=config.default_args,
     schedule_interval='0 10 * * *',
     description='A DAG for processing VIIIRS Active Fire csv and upload to gee',
 )
@@ -48,7 +32,6 @@ url = nasa_website + firms[1]
 url = url.replace("24h", '7d')
 save_folder = Path('data/VIIRS_AF')
 save_folder.mkdir(exist_ok=True)
-print(save_folder)
 
 def download_and_upload(url, save_folder, asset_id, bucket="ai4wildfire"):
     filename = os.path.split(url)[-1][:-4]

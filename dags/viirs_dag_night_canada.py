@@ -1,8 +1,9 @@
 import glob
 import os
-os.chdir('/geoinfo_vol1/home/z/h/zhao2/LowResSatellitesService/')
 import sys
-sys.path.insert(0,'/geoinfo_vol1/home/z/h/zhao2/LowResSatellitesService/')
+from pathlib import Path
+root_path = str(Path(__file__).resolve().parents[1]) + "/"
+sys.path.insert(0,root_path)
 
 
 import datetime
@@ -10,36 +11,25 @@ import multiprocessing
 
 from airflow import DAG
 from airflow.utils.dates import days_ago
-from airflow.operators.python_operator import PythonOperator
+from airflow.operators.python import PythonOperator
 from datetime import timedelta
 import datetime
 from utils.utils import get_json_tasks, get_client_tasks, json_wrapper, client_wrapper, get_tasks, main_process_wrapper, \
     upload
-from datetime import timedelta
+from utils import config
 
-start_date = (datetime.datetime(2023, 9, 24))
-default_args = {
-    'owner': 'zhaoyutim',
-    'start_date': start_date,
-    'depends_on_past': False,
-    'email': ['zhaoyutim@gmail.com'],
-    'email_on_failure': True,
-    'email_on_retry': False,
-    'retries': 1,
-    'retry_delay': timedelta(minutes=5),
-}
 dag = DAG(
     'VIIRS_Night_Iband_process_and_upload_CANADA',
-    default_args=default_args,
+    default_args=config.default_args,
     schedule_interval='0 10 * * *',
     description='A DAG for processing VIIRS night Iband images and upload to gee',
 
 )
 
-dir_json = '/geoinfo_vol1/home/z/h/zhao2/LowResSatellitesService/data/VNPL1'
-dir_nc = '/geoinfo_vol1/home/z/h/zhao2/LowResSatellitesService/data/VNPNC'
-dir_tif = '/geoinfo_vol1/home/z/h/zhao2/LowResSatellitesService/data/VNPIMGTIF'
-dir_subset = '/geoinfo_vol1/home/z/h/zhao2/LowResSatellitesService/data/subset'
+dir_json = root_path + 'data/VNPL1'
+dir_nc = root_path + 'data/VNPNC'
+dir_tif = root_path + 'data/VNPIMGTIF'
+dir_subset = root_path + 'data/subset'
 product_id = 'IMG'
 products_id = ['VNP02'+product_id, 'VNP03'+product_id]
 dn = ['N']
@@ -47,7 +37,7 @@ id = 'CANADA'
 collection_id = '5200'
 utmzone = '4326'
 roi_arg = '-170,41,-41,73'
-print(dir_subset)
+
 def download_files(id, roi_arg, start_date, end_date, dir_json, dir_nc):
     roi = [float(roi_arg.split(',')[0]), float(roi_arg.split(',')[1]), float(roi_arg.split(',')[2]),
            float(roi_arg.split(',')[3])]
