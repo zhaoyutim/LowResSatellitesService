@@ -44,9 +44,9 @@ def download_files(id, start_date, dir_data, collection_id, products_id, hh_list
     year = start_date[:4]
     julian_day = datetime.datetime.strptime(start_date, '%Y-%m-%d').timetuple().tm_yday
     dir_data_with_id = dir_data.joinpath(id)
-    dir_data_with_id.mkdir(exist_ok=True)
+    dir_data_with_id.mkdir(exist_ok=True,parents=True)
     url_part = f"{collection_id}/{products_id}/{year}/{julian_day}/"
-    dir_data_with_id.joinpath(start_date).mkdir(exist_ok=True)
+    dir_data_with_id.joinpath(start_date).mkdir(exist_ok=True,parents=True)
     for hh in hh_list:
         for vv in vv_list:
             print(f"\nstart_date: {start_date}， h{hh}v{vv}")
@@ -97,7 +97,7 @@ def convert_hdf_to_geotiff(id, start_date, dir_data, dir_tif, SOURCE):
                                 variable=desired_bands
                         ).squeeze()
 
-        dir_tif_with_id.joinpath(start_date).mkdir(exist_ok=True)
+        dir_tif_with_id.joinpath(start_date).mkdir(exist_ok=True,parents=True)
         print(f"{filename.replace('MOD09GA', 'MOD09GATIF')}.tif")
         modis_bands.rio.reproject("EPSG:4326").rio.to_raster(f"{dir_tif_with_id}/{start_date}/{filename.replace('MOD09GA', 'MOD09GATIF')}.tif")
 

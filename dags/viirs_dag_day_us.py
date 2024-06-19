@@ -52,8 +52,7 @@ def read_and_project(id, roi_arg, start_date, end_date, dir_nc, dir_tif, dir_sub
     roi = [float(roi_arg.split(',')[0]), float(roi_arg.split(',')[1]), float(roi_arg.split(',')[2]),
            float(roi_arg.split(',')[3])]
     duration = datetime.datetime.strptime(end_date, '%Y-%m-%d') - datetime.datetime.strptime(start_date, '%Y-%m-%d')
-    if not os.path.exists(os.path.join(dir_subset, id)):
-        os.mkdir(os.path.join(dir_subset, id))
+    os.makedirs(os.path.join(dir_subset, id),exist_ok=True)
     tasks = get_tasks(start_date, duration, id, roi, dn, utmzone, product_id, dir_nc, dir_tif, dir_subset)
 
     with multiprocessing.Pool(processes=4) as pool:

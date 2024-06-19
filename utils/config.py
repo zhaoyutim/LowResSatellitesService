@@ -1,7 +1,7 @@
 from datetime import timedelta
 from datetime import datetime
 
-start_date = (datetime(2023, 7, 3))
+start_date = (datetime(2024, 6, 17))
 default_args = {
     'owner': 'zhaoyutim',
     'start_date': start_date,
@@ -58,5 +58,6 @@ modis_config = {
     },
 }
 
-modis_token = 'eyJ0eXAiOiJKV1QiLCJvcmlnaW4iOiJFYXJ0aGRhdGEgTG9naW4iLCJzaWciOiJlZGxqd3RwdWJrZXlfb3BzIiwiYWxnIjoiUlMyNTYifQ.eyJ0eXBlIjoiVXNlciIsInVpZCI6InpoYW95dXRpbSIsImV4cCI6MTY5Mjk0ODY4OSwiaWF0IjoxNjg3NzY0Njg5LCJpc3MiOiJFYXJ0aGRhdGEgTG9naW4ifQ.8VcF6eI2baAURBcKZn1Cca9xTTt5bMxMCnF9bfMaqH6GLiDMd-j3f35aTJikF1amrkRq_Mq9L-KFEUBdkOn-Qn3BFiLsxIvKIEjtvl02mGigYExtK5trxJOi4Vm3NBeZIGBjiFdOU1kjmJl-uu9o_lnWSH7xQBQc6uEJ8zrX3Z31nnel8DiwZIv1GN5R5ElUqce38oYk7xyymfzeBx94tEUi084gwuQtwTOvAc_Xly0ZQcBidJh_UKuZKCbxBgPOmwTlHPdrjN-FofSRIXx8M8CdMomJV0h9_SGxikF1r0dV-oPYDxA40vNhNMUepYYd1iGkeIFYwZUfZ5P87upZ-g'
-#modis_token = 'emhhb3l1dGltOmVtaGhiM2wxZEdsdFFHZHRZV2xzTG1OdmJRPT06MTYyNjQ0MTQyMTphMzhkYTcwMzc5NTg1M2NhY2QzYjY2NTU0ZWFkNzFjMGEwMTljMmJj'
+modis_token = 'eyJ0eXAiOiJKV1QiLCJvcmlnaW4iOiJFYXJ0aGRhdGEgTG9naW4iLCJzaWciOiJlZGxqd3RwdWJrZXlfb3BzIiwiYWxnIjoiUlMyNTYifQ.eyJ0eXBlIjoiVXNlciIsInVpZCI6InpoYW95dXRpbSIsImV4cCI6MTcyMjAxNjA5MywiaWF0IjoxNzE2ODMyMDkzLCJpc3MiOiJFYXJ0aGRhdGEgTG9naW4ifQ.5NTvTwZnH4iKpUYSOak-WgLoQ_XQag-6L2qaphQDze5KxJGPnAV5JIdVAtN78dm2UftRG0-MoHujELUZ_acsr3Gtsw1TlByhGEuh5F9WgWeVl55l37jlzDZcWWdsjLLdpf7SfgvnP-SAIMUAbeBlo1wIBKJUGqEX4qaxBVg5AOZlxZo6o2kOBI1UCxhhOTjQE8r0Na3dOI6oulEMvpmoGvphj0IabnrNCdCGctni_45PhKHnH38OBiErnIsWH4Wo8AVmXAOFmbZDpytOjuKQwpELVm2VC90nYNcOJhArPxvKjz_ZAdU8Rr0kYDImTfbgCZXzohvsMj2VcBqnx_S2Mg'
+ee_path = '/home/a/a/aadelow/miniforge3/envs/lrss/bin/earthengine'
+project_name = 'ee-eo4wildfire'

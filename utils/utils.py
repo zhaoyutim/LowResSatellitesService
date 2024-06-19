@@ -11,19 +11,22 @@ from google.cloud import storage
 
 from LaadsDataHandler.laads_client import LaadsClient
 from ProcessingPipeline.processing_pipeline import Pipeline
+import utils.config
+import ee
 
 logger = logging.getLogger(__name__)
 
 laads_client = LaadsClient()
 pipeline = Pipeline()
 
+ee.Authenticate()
+ee.Initialize(project=utils.config.project_name)
+
 def json_wrapper(args):
     return laads_client.query_filelist_with_date_range_and_area_of_interest(*args)
 
-
 def client_wrapper(args):
     return laads_client.download_files_to_local_based_on_filelist(*args)
-
 
 def get_json_tasks(target_id, start_date, duration, area_of_interest, products_id, day_night, dir_json, collection_id):
     tasks = []
@@ -37,7 +40,6 @@ def get_json_tasks(target_id, start_date, duration, area_of_interest, products_i
             )
         )
     return tasks
-
 
 def get_client_tasks(id, start_date, duration, products_id, day_night, dir_json, dir_nc, collection_id):
     tasks = []
@@ -81,7 +83,6 @@ def upload_to_gcloud(file, gs_path='gs://ai4wildfire/VNPPROJ5/'):
     os.system(upload_cmd)
     print('finish uploading' + file_name)
 
-
 def upload_to_gee(file, gs_path='gs://ai4wildfire/VNPPROJ5/', asset_id='projects/proj5-dataset/assets/proj5_dataset/'):
     print('start uploading to gee')
     file_name = file.split('/')[-1]
@@ -90,7 +91,7 @@ def upload_to_gee(file, gs_path='gs://ai4wildfire/VNPPROJ5/', asset_id='projects
     time = file.split('/')[-1][17:21]
     gs_path += id + '/' + file_name
     time_start = date + 'T' + time[:2] + ':' + time[2:] + ':00'
-    cmd = '/geoinfo_vol1/home/z/h/zhao2/mambaforge/envs/rioxarray_env/bin/earthengine upload image --force --time_start ' + time_start + ' --asset_id='+asset_id + \
+    cmd = utils.config.ee_path + ' upload image --force --time_start ' + time_start + ' --asset_id='+asset_id + \
           id+'_'+file_name[:-4] + ' --pyramiding_policy=sample '+gs_path
     print(cmd)
     subprocess.call(cmd.split())
@@ -124,7 +125,7 @@ def upload_to_gee_hdf(file, gs_path='gs://ai4wildfire/VNPPROJ5/', asset_id='proj
     else:
         raise 'product_id not found'
 
-    cmd = '/geoinfo_vol1/home/z/h/zhao2/mambaforge/envs/rioxarray_env/bin/earthengine upload image --force --time_start ' + time_start + ' --asset_id='+asset_id + \
+    cmd = utils.config.ee_path + ' upload image --force --time_start ' + time_start + ' --asset_id='+asset_id + \
           product_id+'_'+id+'_'+position+'_'+start_date + ' --pyramiding_policy=sample '+gs_path
     print(cmd)
     subprocess.call(cmd.split())
@@ -137,7 +138,6 @@ def upload(file, asset_id):
 def upload_hdf(file, asset_id):
     upload_to_gcloud_hdf(file)
     upload_to_gee_hdf(file, asset_id=asset_id)
-
 
 def download_af_from_firms(url, save_folder):
     print(url)
@@ -175,7 +175,6 @@ def download_af_from_firms(url, save_folder):
     # logging.info("Downloading file.")
     down(dst, url)
     print("------- Download Finished! ---------\n")
-
 
 def un_zip(src):
     save_folder = Path(os.path.split(src)[0])

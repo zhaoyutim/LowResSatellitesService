@@ -30,8 +30,8 @@ asset_id = f"projects/ee-eo4wildfire/assets/VIIRS_AF"
 nasa_website = "https://firms.modaps.eosdis.nasa.gov"
 url = nasa_website + firms[1]
 url = url.replace("24h", '7d')
-save_folder = Path('data/VIIRS_AF')
-save_folder.mkdir(exist_ok=True)
+save_folder = Path(root_path + 'data/VIIRS_AF')
+save_folder.mkdir(exist_ok=True,parents=True)
 
 def download_and_upload(url, save_folder, asset_id, bucket="ai4wildfire"):
     filename = os.path.split(url)[-1][:-4]

@@ -87,6 +87,7 @@ class Pipeline:
                     os.remove(tif_file)
                 del new_scn
                 del scn
+                
     def crop_to_roi(self, date, id, roi, file, dir_subset, utmzone, product_id):
         output_path = os.path.join(dir_subset, id, file.split('/')[-1])
         if os.path.exists(output_path.replace('VNP'+product_id, 'VNP' +product_id + 'PRO')):

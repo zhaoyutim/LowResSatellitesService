@@ -34,7 +34,7 @@ def test_read_and_project():
     read_and_project(id, roi_arg, start_date, end_date, dir_nc, dir_tif, dir_subset)
 
 def test_upload_in_parallel():
-    upload_in_parallel(id, start_date, asset_id, filepath='data/subset')
+    upload_in_parallel(id, start_date, asset_id, filepath=root_path+'data/subset')
 
 if __name__=='__main__':
     test_download_files()
