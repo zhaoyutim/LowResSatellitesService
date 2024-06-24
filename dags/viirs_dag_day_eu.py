@@ -6,8 +6,7 @@ root_path = str(Path(__file__).resolve().parents[1]) + "/"
 sys.path.insert(0,root_path)
 
 import datetime
-import multiprocessing
-
+import billiard as multiprocessing
 from airflow import DAG
 from airflow.utils.dates import days_ago
 from airflow.operators.python import PythonOperator
@@ -59,7 +58,7 @@ def read_and_project(id, roi_arg, start_date, end_date, dir_nc, dir_tif, dir_sub
         results = list(pool.imap_unordered(main_process_wrapper, tasks))
     print(results)
 
-def upload_in_parallel(id, start_date, asset_id, filepath='data/subset'):
+def upload_in_parallel(id, start_date, asset_id, filepath=root_path+'data/subset'):
     print(filepath, id, start_date)
     file_list = glob.glob(os.path.join(filepath, id, 'VNPIMG'+start_date+'*.tif'))
     results = []

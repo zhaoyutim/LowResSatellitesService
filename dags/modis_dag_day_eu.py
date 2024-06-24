@@ -6,7 +6,7 @@ root_path = str(Path(__file__).resolve().parents[1]) + "/"
 sys.path.insert(0,root_path)
 
 import datetime
-import multiprocessing
+import billiard as multiprocessing
 from easydict import EasyDict as edict
 from pathlib import Path
 import rioxarray as rxr
@@ -101,7 +101,7 @@ def convert_hdf_to_geotiff(id, start_date, dir_data, dir_tif, SOURCE):
         print(f"{filename.replace('MOD09GA', 'MOD09GATIF')}.tif")
         modis_bands.rio.reproject("EPSG:4326").rio.to_raster(f"{dir_tif_with_id}/{start_date}/{filename.replace('MOD09GA', 'MOD09GATIF')}.tif")
 
-def upload_in_parallel(id, start_date, asset_id, filepath='data/MOD09GATIF'):
+def upload_in_parallel(id, start_date, asset_id, filepath=root_path+'data/MOD09GATIF'):
     print(filepath, id, start_date)
     julian_day = datetime.datetime.strptime(start_date, '%Y-%m-%d').timetuple().tm_yday
     file_list = glob.glob(os.path.join(filepath, id, start_date, 'MOD09GA*'+str(julian_day)+'*.tif'))

@@ -10,7 +10,7 @@ import ee
 
 parser = argparse.ArgumentParser(description='Process some integers.')
 parser.add_argument('-id', type=str, help='Product ID IMG or MOD',default="NA")
-parser.add_argument('-sd', type=str, help='Start Date if mode is selected as roi',default="2024-06-08")
+parser.add_argument('-sd', type=str, help='Start Date if mode is selected as roi',default="2024-06-20")
 dir_data = Path(root_path + 'data/MOD09GA')
 dir_tif = Path(root_path + 'data/MOD09GATIF')
 args = parser.parse_args()
@@ -19,8 +19,8 @@ id = args.id
 start_date = args.sd
 utmzone = '4326'
 if id == 'NA':
-    hh_list = ['12']#['08' , '09', '10', '11', '12', '13', '14']
-    vv_list = ['05']#['02' , '03', '04', '05']
+    hh_list = ['11']#['08' , '09', '10', '11', '12', '13', '14']
+    vv_list = ['04']#['02' , '03', '04', '05']
 elif id == 'EU':
     hh_list = ['17', '18', '19', '20', '21', '22', '23']
     vv_list = ['02', '03', '04', '05']

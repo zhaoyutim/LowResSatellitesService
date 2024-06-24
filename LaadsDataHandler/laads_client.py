@@ -2,13 +2,13 @@ import datetime
 import json
 import os
 import subprocess
-
 from requests.adapters import HTTPAdapter
 from simple_file_checksum import get_checksum
-
 import requests
 from urllib3 import Retry
+from pathlib import Path
 
+root_path = str(Path(__file__).resolve().parents[1]) + "/"
 
 class LaadsClient:
 
@@ -70,7 +70,7 @@ class LaadsClient:
                         outf.write(response.content)
                     print('New ' + product_id +' file list for day '+date+' created '+day_night)
 
-    def download_files_to_local_based_on_filelist(self, id, date, products_id = ['VNP02IMG', 'VNP03IMG'], day_night_modes=['D', 'N'], json_path='data/VNPL1', data_path='/Volumes/yussd/viirs/VNPNC', collection_id='5110'):
+    def download_files_to_local_based_on_filelist(self, id, date, products_id = ['VNP02IMG', 'VNP03IMG'], day_night_modes=['D', 'N'], json_path=root_path+'data/VNPL1', data_path=root_path+'/data/VNPNC', collection_id='5110'):
         date_ndays = (datetime.datetime.strptime(date, '%Y-%m-%d')-datetime.datetime.strptime(date[:4]+'-01-01', '%Y-%m-%d')).days+1
         for i in range(len(products_id)):
             for day_night in day_night_modes:

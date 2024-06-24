@@ -6,7 +6,7 @@ root_path = str(Path(__file__).resolve().parents[1]) + "/"
 sys.path.insert(0,root_path)
 
 import datetime
-import multiprocessing
+import billiard as multiprocessing
 from airflow import DAG
 from airflow.utils.dates import days_ago
 from airflow.operators.python import PythonOperator
@@ -32,7 +32,7 @@ dir_subset = root_path + 'data/subset'
 product_id = 'IMG'
 products_id = ['VNP02'+product_id, 'VNP03'+product_id]
 dn = ['D']
-id = 'US'
+id = 'CANADA'
 collection_id = '5200'
 utmzone = '4326'
 roi_arg = '-127,24,-66,50'
@@ -45,6 +45,7 @@ def download_files(id, roi_arg, start_date, end_date, dir_json, dir_nc):
     print('Currently processing id {}'.format(id))
     tasks = get_json_tasks(id, start_date, duration, area_of_interest, products_id, dn, dir_json, collection_id)
     tasks2 = get_client_tasks(id, start_date, duration, products_id, dn, dir_json, dir_nc, collection_id)
+    
     with multiprocessing.Pool(processes=4) as pool:
         results = list(pool.imap_unordered(json_wrapper, tasks))
     with multiprocessing.Pool(processes=4) as pool:
@@ -59,6 +60,7 @@ def read_and_project(id, roi_arg, start_date, end_date, dir_nc, dir_tif, dir_sub
 
     with multiprocessing.Pool(processes=4) as pool:
         results = list(pool.imap_unordered(main_process_wrapper, tasks))
+
     print(results)
 
 def to_mosaic(id,start_date,end_date,):    
@@ -72,27 +74,25 @@ def to_mosaic(id,start_date,end_date,):
         for tiff_file in tiff_files:
             array, profile = main_mosaic.read_tiff(tiff_file)
             array = np.nan_to_num(array)
-            #plt.imshow(array[0,:,:])
-            #plt.show()
             main_mosaic.write_tiff(tiff_file, array, profile)
         print('Finish remove Nan')
         mosaic, mosaic_metadata = main_mosaic.mosaic_geotiffs(tiff_files)
         main_mosaic.write_tiff(output_path, mosaic, mosaic_metadata)
         print('Finish Creating mosaic')
 
-download_task = PythonOperator(
-    task_id='download_task',
-    python_callable=download_files,
-    op_kwargs={
-        'id':id,
-        'roi_arg':roi_arg,
-        'start_date':(datetime.datetime.today()-datetime.timedelta(days=1)).strftime('%Y-%m-%d'),
-        'end_date': datetime.datetime.today().strftime('%Y-%m-%d'),
-        'dir_json':dir_json,
-        'dir_nc':dir_nc
-    },
-    dag=dag,
-)
+#download_task = PythonOperator(
+#    task_id='download_task',
+#    python_callable=download_files,
+ #   op_kwargs={
+ #       'id':id,
+ #       'roi_arg':roi_arg,
+ #       'start_date':(datetime.datetime.today()-datetime.timedelta(days=1)).strftime('%Y-%m-%d'),
+ #       'end_date': datetime.datetime.today().strftime('%Y-%m-%d'),
+ #       'dir_json':dir_json,
+ #       'dir_nc':dir_nc
+ #   },
+ #   dag=dag,
+#)
 
 read_project_task = PythonOperator(
     task_id='read_project_task',
@@ -120,4 +120,4 @@ to_mosaic_task = PythonOperator(
     dag=dag,
 )
 
-download_task >> read_project_task >> to_mosaic_task
+read_project_task >> to_mosaic_task

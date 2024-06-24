@@ -1,7 +1,7 @@
 from datetime import timedelta
 from datetime import datetime
 
-start_date = (datetime(2024, 6, 17))
+start_date = (datetime(2024, 6, 24))
 default_args = {
     'owner': 'zhaoyutim',
     'start_date': start_date,
