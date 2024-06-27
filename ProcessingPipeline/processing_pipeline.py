@@ -4,7 +4,8 @@ import os
 import subprocess
 import time
 from logging.handlers import RotatingFileHandler
-
+from pathlib import Path
+root_path = str(Path(__file__).resolve().parents[1]) + "/"
 import numpy as np
 from pyresample import create_area_def
 from satpy import find_files_and_readers
@@ -15,7 +16,7 @@ class Pipeline:
     def __init__(self):
         return
 
-    def read_and_projection(self, date, roi, day_nights, product_id, dir_data='E:/viirs/VNPNC', dir_tiff='E:/viirs/VNPIMGTIF'):
+    def read_and_projection(self, date, roi, day_nights, product_id, dir_data, dir_tiff):
         for day_night in day_nights:
             dir_list = glob.glob(os.path.join(dir_data, date, day_night, '*'))
             dir_list.sort()
@@ -88,20 +89,24 @@ class Pipeline:
                 del new_scn
                 del scn
                 
-    def crop_to_roi(self, date, id, roi, file, dir_subset, utmzone, product_id):
-        output_path = os.path.join(dir_subset, id, file.split('/')[-1])
+    def crop_to_roi(self, date, id, roi, file, dir_subset, utmzone, product_id, day_night):
+        print("Cropping image ", file)
+        os.makedirs(os.path.join(dir_subset, id, date, day_night),exist_ok=True)
+        output_path = os.path.join(dir_subset, id, date, day_night, file.split('/')[-1])
         if os.path.exists(output_path.replace('VNP'+product_id, 'VNP' +product_id + 'PRO')):
             return
         cmd='gdalwarp '+'-te ' + str(roi[0]) + ' ' + str(roi[1]) + ' ' + str(roi[2]) + ' ' + str(roi[3]) + ' ' + file + ' ' + output_path
+        print(cmd)
         subprocess.call(cmd.split())
+        print("Completed crop. Saved file at ", output_path)
         # subprocess.call(('gdalwarp -t_srs EPSG:'+utmzone+' -tr 375 375'+file + ' ' + output_path +' '+output_path.replace('VNP'+product_id, 'VNP'+product_id+'PRO')).split())
         # os.remove(os.path.join(dir_subset, id, file.split('/')[-1]))
 
-    def processing(self, date, id, roi, day_nights, utmzone, product_id, dir_data='data/VNPL1', dir_tif='data/VNPIMGTIF', dir_subset='data/cogsubset'):
+    def processing(self, date, id, roi, day_nights, utmzone, product_id, dir_data, dir_tif, dir_subset, dir_json):
         print('id:{}, date:{}'.format(id, date))
         self.read_and_projection(date, roi, day_nights, product_id, dir_data, dir_tif)
         for day_night in day_nights:
-            vnp_json = open(glob.glob(os.path.join('data/VNPL1', id, date, day_night, '*.json'))[0], 'rb')
+            vnp_json = open(glob.glob(os.path.join(dir_json, id, date, day_night, '*.json'))[0], 'rb')
             import json
             def get_name(json):
                 return json.get('name').split('.')[2]
@@ -113,7 +118,7 @@ class Pipeline:
                     print('Time {} not exist'.format(file.split('/')[-2]))
                     continue
                 # subprocess.call(('rio cogeo create ' + file + ' ' +file).split())
-                self.crop_to_roi(date, id, roi, file, dir_subset, utmzone, product_id)
+                self.crop_to_roi(date, id, roi, file, dir_subset, utmzone, product_id, day_night)
 
 if __name__=='__main__':
     # vrt_list = glob.glob('../data/VNPNC/*/*/*/*.vrt')

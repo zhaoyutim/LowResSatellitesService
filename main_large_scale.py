@@ -11,7 +11,7 @@ from utils.utils import get_json_tasks, get_client_tasks, json_wrapper, client_w
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Process some integers.')
-    parser.add_argument('-pid', type=str, help='Product ID IMG or MOD')
+    parser.add_argument('-pid', type=str, help='Product ID IMG or MOD') #MOD for moderate
     parser.add_argument('-mode', type=str, help='Mode to be selected between roi based or csv based')
     parser.add_argument('-y', type=str, help='Year if mode is selected as csv')
     parser.add_argument('-dn', type=str, help='Daynight')

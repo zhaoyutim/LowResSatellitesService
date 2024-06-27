@@ -5,7 +5,8 @@ import glob
 import multiprocessing
 import os
 import platform
-
+from pathlib import Path
+root_path = str(Path(__file__).resolve().parents[1]) + "/"
 import pandas as pd
 from ProcessingPipeline.processing_pipeline import Pipeline
 from utils.utils import get_tasks, main_process_wrapper
@@ -29,23 +30,9 @@ if __name__ == '__main__':
         dn.append(args.dn[i])
     utmzone = '4326'
     
-
-    if platform.system()=='Windows':
-        dir_nc = 'G:\\viirs\\VNPNC'
-        dir_tif = 'C:\\Users\\Yu\\Desktop\\viirs\\VNPIMGTIF'
-        dir_subset = 'C:\\Users\\Yu\\Desktop\\viirs\\subset'
-
-    elif platform.system()=='Darwin':
-        dir_nc = 'G:\\viirs\\VNPNC'
-        dir_tif = 'C:\\Users\\Yu\\Desktop\\viirs\\VNPIMGTIF'
-        dir_subset = 'C:\\Users\\Yu\\Desktop\\viirs\\subset'
-
-    else:
-        dir_nc = 'data/VNPNC'
-        dir_tif = 'data/VNP'+product_id+'TIF'
-        dir_subset = 'data/subset'
-
-
+    dir_nc = root_path+'data/VNPNC'
+    dir_tif = root_path+'data/VNP'+product_id+'TIF'
+    dir_subset = root_path+'data/subset'
 
     if mode == 'csv':
         filename = 'roi/us_fire_' + year + '_out_new.csv'
@@ -92,10 +79,10 @@ if __name__ == '__main__':
             day_night = 'D'
             roi = [lon - roi_size, lat - roi_size, lon + roi_size, lat + roi_size]
             duration = datetime.timedelta(days=1)
-            tif_list = glob.glob(os.path.join('data/VNPIMGTIF', start_date, day_night, 'VNPIMG'+start_date+'*.tif'))
+            tif_list = glob.glob(os.path.join(root_path+'data/VNPIMGTIF', start_date, day_night, 'VNPIMG'+start_date+'*.tif'))
             for tif_file in tif_list:
                 os.remove(tif_file)
-            subset_list = glob.glob(os.path.join('data/subset', target_id, 'VNPIMG'+start_date+'*.tif'))
+            subset_list = glob.glob(os.path.join(root_path+'data/subset', target_id, 'VNPIMG'+start_date+'*.tif'))
             for subset_file in subset_list:
                 os.remove(subset_file)
 

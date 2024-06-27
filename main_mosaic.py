@@ -40,16 +40,17 @@ def read_tiff(file_path):
         metadata = src.meta
     return image, metadata
 
-def combine_tiff(file1_path, file2_path):
-    image1, metadata1 = read_tiff(file1_path)
-    image2, metadata2 = read_tiff(file2_path)
-    assert metadata1["width"] == metadata2["width"] and metadata1["height"] == metadata2[
-        "height"], "Images must have the same dimensions."
-    combined_image = np.concatenate((image1, image2), axis=0)
-    combined_metadata = metadata1.copy()
-    combined_metadata["count"] = combined_image.shape[0]
-
-    output_path = "combined.tif"
+def combine_tiff(file_paths,output_path,axis=0):
+    image1, metadata1 = read_tiff(file_paths[0])
+    for i in range(len(file_paths)-1):
+        image2, metadata2 = read_tiff(file_paths[i+1])
+        assert metadata1["width"] == metadata2["width"] and metadata1["height"] == metadata2[
+"height"], "Images must have the same dimensions. Image 1:" + str(metadata1["width"]) + "x" + str(metadata1["height"]) + ". Image 2: " + str(metadata2["width"]) + "x" + str(metadata2["height"])
+        combined_image = np.concatenate((image1, image2), axis=axis)
+        image1 = combined_image
+        combined_metadata = metadata1.copy()
+        combined_metadata["count"] = combined_image.shape[0]
+    print("Creating image of shape ", combined_image.shape)
     write_tiff(output_path, combined_image, combined_metadata)
 
 

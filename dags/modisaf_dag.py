@@ -13,8 +13,9 @@ from airflow.utils.dates import days_ago
 from airflow.operators.python import PythonOperator
 from datetime import timedelta
 from utils.utils import download_af_from_firms
-
 from utils import config
+from dags import dag_utils
+
 
 dag = DAG(
     'MODISAF_process_and_upload',

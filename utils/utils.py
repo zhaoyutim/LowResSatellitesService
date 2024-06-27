@@ -19,6 +19,9 @@ logger = logging.getLogger(__name__)
 laads_client = LaadsClient()
 pipeline = Pipeline()
 
+import os
+os.environ["GCLOUD_PROJECT"] = "ee-eo4wildfire"
+
 ee.Authenticate()
 ee.Initialize(project=utils.config.project_name)
 
@@ -57,13 +60,13 @@ def get_client_tasks(id, start_date, duration, products_id, day_night, dir_json,
 def main_process_wrapper(args):
     return pipeline.processing(*args)
 
-def get_tasks(start_date, duration, id, roi, day_nights, utmzone, product_id, dir_nc, dir_tif, dir_subset):
+def get_tasks(start_date, duration, id, roi, day_nights, utmzone, product_id, dir_nc, dir_tif, dir_subset, dir_json):
     tasks = []
     for k in range(duration.days):
         tasks.append(
             (
                 (datetime.datetime.strptime(start_date, '%Y-%m-%d') + datetime.timedelta(k)).strftime('%Y-%m-%d'),
-                id, roi, day_nights, utmzone, product_id, dir_nc, dir_tif, dir_subset
+                id, roi, day_nights, utmzone, product_id, dir_nc, dir_tif, dir_subset, dir_json
             )
         )
     return tasks

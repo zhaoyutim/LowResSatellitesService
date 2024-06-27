@@ -55,15 +55,15 @@ def download_files(id, start_date, dir_data, collection_id, products_id, hh_list
             if products_id in ['VNP09GA_NRT']:
                 # VNP09GA_NRT
                 filename = 'VNP09GA_NRT.A"+str(year)+f"{julian_day}.h{hh}v{vv}.001.*.h5'
-                command = "wget -e robots=off -m -np -R .html,.tmp -nH --cut-dirs=9 " + \
-                    f"\"https://ladsweb.modaps.eosdis.nasa.gov/archive/allData/{url_part}/VNP09GA_NRT.A"+str(year)+f"{julian_day}.h{hh}v{vv}.001.h5\" --header \"Authorization: Bearer {config.modis_token}\" \
+                command = "wget -e --timeout=5 robots=off -m -np -R .html,.tmp -nH --cut-dirs=9 " + \
+                    f"\"https://ladsweb.modaps.eosdis.nasa.gov/archive/allData/{url_part}/VNP09GA_NRT.A"+str(year)+f"{julian_day}.h{hh}v{vv}.001.h5\" --header \"Authorization: Bearer {config.auth_token}\" \
                         -P {dir_data_with_id.joinpath(start_date)}"
 
             if products_id in ['MOD09GA']:
                 # MOD09GA NRT from LANCE
                 # MOD09GA.A2022246.h00v08.061.2022247021401.NRT.hdf
-                command = "wget -e robots=off -m -np -R .html,.tmp -nH --cut-dirs=9 " + \
-                    f"\"https://nrt4.modaps.eosdis.nasa.gov/api/v2/content/archives/allData/{url_part}/{products_id}.A"+str(year)+f"{julian_day}.h{hh}v{vv}.061.NRT.hdf\" --header \"Authorization: Bearer {config.modis_token}\" \
+                command = "wget -e --timeout=5 robots=off -m -np -R .html,.tmp -nH --cut-dirs=9 " + \
+                    f"\"https://nrt4.modaps.eosdis.nasa.gov/api/v2/content/archives/allData/{url_part}/{products_id}.A"+str(year)+f"{julian_day}.h{hh}v{vv}.061.NRT.hdf\" --header \"Authorization: Bearer {config.auth_token}\" \
                         -P {dir_data_with_id.joinpath(start_date)}"
             if len(glob.glob(os.path.join(f"{dir_data_with_id}/{start_date}", f'{products_id}.A'+str(year)+f'{julian_day}.h{hh}v{vv}.061.NRT.hdf')))!=0:
                 print('HDF file exist')

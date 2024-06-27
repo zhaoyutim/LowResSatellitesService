@@ -49,12 +49,12 @@ def download_files(id, roi_arg, start_date, end_date, dir_json, dir_nc):
     with multiprocessing.Pool(processes=4) as pool:
         results = list(pool.imap_unordered(client_wrapper, tasks2))
 
-def read_and_project(id, roi_arg, start_date, end_date, dir_nc, dir_tif, dir_subset):
+def read_and_project(id, roi_arg, start_date, end_date, dir_nc, dir_tif, dir_subset, dir_json):
     roi = [float(roi_arg.split(',')[0]), float(roi_arg.split(',')[1]), float(roi_arg.split(',')[2]),
            float(roi_arg.split(',')[3])]
     duration = datetime.datetime.strptime(end_date, '%Y-%m-%d') - datetime.datetime.strptime(start_date, '%Y-%m-%d')
     os.makedirs(os.path.join(dir_subset, id),exist_ok=True)
-    tasks = get_tasks(start_date, duration, id, roi, dn, utmzone, product_id, dir_nc, dir_tif, dir_subset)
+    tasks = get_tasks(start_date, duration, id, roi, dn, utmzone, product_id, dir_nc, dir_tif, dir_subset, dir_json)
 
     with multiprocessing.Pool(processes=4) as pool:
         results = list(pool.imap_unordered(main_process_wrapper, tasks))
@@ -69,7 +69,7 @@ def upload_in_parallel(id, start_date, asset_id, filepath=root_path+'data/subset
             id = file.split('/')[-2]
             date = file.split('/')[-1][6:16]
             time = file.split('/')[-1][17:21]
-            vnp_json = open(glob.glob(os.path.join('data/VNPL1', id, date, 'D', '*.json'))[0], 'rb')
+            vnp_json = open(glob.glob(os.path.join(root_path+'data/VNPL1', id, date, 'D', '*.json'))[0], 'rb')
             import json
             def get_name(json):
                 return json.get('name').split('.')[2]
@@ -104,7 +104,8 @@ read_project_task = PythonOperator(
         'end_date': datetime.datetime.today().strftime('%Y-%m-%d'),
         'dir_nc': dir_nc,
         'dir_tif': dir_tif,
-        'dir_subset': dir_subset
+        'dir_subset': dir_subset,
+        'dir_json': dir_json
     },
     dag=dag,
 )

@@ -9,6 +9,7 @@ from urllib3 import Retry
 from pathlib import Path
 
 root_path = str(Path(__file__).resolve().parents[1]) + "/"
+from utils import config
 
 class LaadsClient:
 
@@ -17,7 +18,7 @@ class LaadsClient:
         self.download_base_link = 'https://ladsweb.modaps.eosdis.nasa.gov'
         self.header = {
             "X-Requested-With": "XMLHttpRequest",
-            'Authorization': 'Bearer emhhb3l1dGltOmVtaGhiM2wxZEdsdFFHZHRZV2xzTG1OdmJRPT06MTYzMzk0NzU0NTphZmRlYWY2MjE2ODg0MjQ5MTEzNmE3MTE4MzZkOWYxYjg3MWQzNWMz'}
+            'Authorization': 'Bearer ' + config.auth_token}
 
     def runcmd(self, cmd, verbose=False, *args, **kwargs):
 
@@ -32,7 +33,7 @@ class LaadsClient:
         if verbose:
             print(std_out.strip(), std_err)
         pass
-    def query_filelist_with_date_range_and_area_of_interest(self, id, date, area_of_interest='W-129 N56.2 E-110.4 S31.7', products_id = ['VNP02IMG', 'VNP03IMG'], day_night_modes=['D', 'N'], data_path='data/VNPL1', collection_id='5110'):
+    def query_filelist_with_date_range_and_area_of_interest(self, id, date, area_of_interest='W-129 N56.2 E-110.4 S31.7', products_id = ['VNP02IMG', 'VNP03IMG'], day_night_modes=['D', 'N'], data_path=root_path+'data/VNPL1', collection_id='5110'):
         # products_id = ['VNP02IMG', 'VNP03IMG']
         for day_night in day_night_modes:
             for i in range(len(products_id)):
@@ -49,7 +50,7 @@ class LaadsClient:
                     print('Json already exist, update the Json')
                     # os.remove(os.path.join(json_path, date + '_' + product_id + '.json'))
                 # Create a Retry object with the desired number of retries
-                retries = Retry(total=50, backoff_factor=0.1, status_forcelist=[500, 502, 503, 504])
+                retries = Retry(total=25, backoff_max=15, backoff_factor=0.05, status_forcelist=[500, 502, 503, 504])
 
                 # Create an HTTPAdapter with the Retry object
                 adapter = HTTPAdapter(max_retries=retries)
@@ -70,7 +71,7 @@ class LaadsClient:
                         outf.write(response.content)
                     print('New ' + product_id +' file list for day '+date+' created '+day_night)
 
-    def download_files_to_local_based_on_filelist(self, id, date, products_id = ['VNP02IMG', 'VNP03IMG'], day_night_modes=['D', 'N'], json_path=root_path+'data/VNPL1', data_path=root_path+'/data/VNPNC', collection_id='5110'):
+    def download_files_to_local_based_on_filelist(self, id, date, products_id = ['VNP02IMG', 'VNP03IMG'], day_night_modes=['D', 'N'], json_path=root_path+'data/VNPL1', data_path=root_path+'data/VNPNC', collection_id='5110'):
         date_ndays = (datetime.datetime.strptime(date, '%Y-%m-%d')-datetime.datetime.strptime(date[:4]+'-01-01', '%Y-%m-%d')).days+1
         for i in range(len(products_id)):
             for day_night in day_night_modes:
@@ -93,15 +94,16 @@ class LaadsClient:
                         else:
                             print('VNP Product: {}, Incompletely Downloaded, Start Redownloading'.format(vnp_name))
                             os.remove(os.path.join(data_path, date, day_night, time_captured, vnp_name))
+                            
                     if not os.path.exists(os.path.join(data_path, date, day_night, time_captured)):
                         os.makedirs(os.path.join(data_path, date , day_night, time_captured))
 
                     if not os.path.exists(os.path.join(data_path, date, day_night, time_captured, vnp_name)):
-                        # print("Downloading netCDF files " + vnp_name.split('.')[1] + vnp_name.split('.')[
-                        #     2] + " from Remote server")
-                        wget_command_vnp = "wget " + vnp_link +" --header X-Requested-With:XMLHttpRequest" + " --header \"Authorization: Bearer emhhb3l1dGltOmVtaGhiM2wxZEdsdFFHZHRZV2xzTG1OdmJRPT06MTYzMzk0NzU0NTphZmRlYWY2MjE2ODg0MjQ5MTEzNmE3MTE4MzZkOWYxYjg3MWQzNWMz\" -P " + os.path.join(data_path, date, day_night, time_captured)
-                        self.runcmd(wget_command_vnp)
+                        wget_command_vnp = "wget " + vnp_link + " --timeout=5" + " --header X-Requested-With:XMLHttpRequest" + " --header \"Authorization: Bearer " + config.auth_token + "\"" + " -P " + os.path.join(data_path, date, day_night, time_captured)
+                        self.runcmd(wget_command_vnp,verbose=True)
+                        print(wget_command_vnp)
                         print('VNP Product: {}, Download Complete'.format(vnp_name))
+
 if __name__ == '__main__':
     date = '2020-08-08'
     laads_client = LaadsClient()
