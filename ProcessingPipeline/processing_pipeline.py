@@ -139,4 +139,3 @@ if __name__=='__main__':
             logger.info((datentime + '/MOD'))
         if len(img_nc_list) != 2:
             logger.info((datentime + '/IMG'))
-        

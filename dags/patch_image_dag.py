@@ -37,12 +37,13 @@ dn_mod = ['D']
 id = 'MOSAIC'
 collection_id = '5200'
 utmzone = '4326'
-roi_arg = '-105,00,-100,05'
-start_date = (datetime.datetime.today()-datetime.timedelta(days=2*3)).strftime('%Y-%m-%d')
-end_date = datetime.datetime.today().strftime('%Y-%m-%d')
+roi_arg = '-125,55,-120,60'
+start_date = (datetime.datetime.today()-datetime.timedelta(days=3)).strftime('%Y-%m-%d')
+end_date = (datetime.datetime.today()-datetime.timedelta(days=1)).strftime('%Y-%m-%d')
 interval = 2
 
 def download_files(id, roi_arg, start_date, end_date, dir_json, dir_nc):
+    print("Downloading files from", start_date,"to",end_date)
     roi = [float(roi_arg.split(',')[0]), float(roi_arg.split(',')[1]), float(roi_arg.split(',')[2]),
            float(roi_arg.split(',')[3])]
     duration = datetime.datetime.strptime(end_date, '%Y-%m-%d') - datetime.datetime.strptime(start_date, '%Y-%m-%d')
@@ -86,15 +87,15 @@ def to_mosaic(id,start_date,end_date):
     mosaic_day_paths = []
     for k in range(duration.days):
         date = (datetime.datetime.strptime(start_date, '%Y-%m-%d') + datetime.timedelta(k)).strftime('%Y-%m-%d')
-        os.makedirs(root_path+'data/mosaic/daily/'+date,exist_ok=True)
-        mosaic_day_paths.append(root_path+'data/mosaic/daily/'+date+'/VNP'+date+'_mosaic.tif')
+        os.makedirs(root_path+'data/mosaic/daily/',exist_ok=True)
+        mosaic_day_paths.append(root_path+'data/mosaic/daily/'+'/VNP_mosaic'+date+'.tif')
         print('Processing: ' + date)
         
         img_day_tiff_files = glob.glob(os.path.join(dir_subset, id, date, 'D')+'/**/VNPIMG*.tif', recursive=True)
         img_night_tiff_files = glob.glob(os.path.join(dir_subset, id, date, 'N')+'/**/VNPIMG*.tif', recursive=True)
         mod_tiff_files = glob.glob(os.path.join(dir_subset, id, date)+'/**/VNPMOD*.tif', recursive=True)
-        tiff_files =[img_day_tiff_files,img_night_tiff_files,mod_tiff_files]
-        channel_names=['D','BN','MOD']
+        tiff_files =[img_day_tiff_files,mod_tiff_files,img_night_tiff_files]
+        channel_names=['D','MOD','BN']
         print('Found ', len(img_day_tiff_files)+len(img_night_tiff_files)+len(mod_tiff_files), ' files')
         print('Remove Nan')
 
@@ -108,13 +109,13 @@ def to_mosaic(id,start_date,end_date):
 
             mosaic, mosaic_metadata = main_mosaic.mosaic_geotiffs(tiff_files[channel])
             os.makedirs(os.path.join(root_path+'data/mosaic/channels',date,channel_names[channel]),exist_ok=True)
-            output_path = os.path.join(root_path+'data/mosaic/channels',date, channel_names[channel], 'VNP'+date+'_mosaic.tif')
+            output_path = os.path.join(root_path+'data/mosaic/channels',date, channel_names[channel], 'VNP_mosaic'+date+'.tif')
             main_mosaic.write_tiff(output_path, mosaic, mosaic_metadata)
             print("Created mosaic for ", channel_names[channel])
         
-        main_mosaic.combine_tiff([os.path.join(root_path+'data/mosaic/channels', date, channel_names[0], 'VNP'+date+'_mosaic.tif'),
-                                  os.path.join(root_path+'data/mosaic/channels', date, channel_names[1], 'VNP'+date+'_mosaic.tif'),
-                                  os.path.join(root_path+'data/mosaic/channels', date, channel_names[2], 'VNP'+date+'_mosaic.tif')], mosaic_day_paths[k])
+        main_mosaic.combine_tiff([os.path.join(root_path+'data/mosaic/channels', date, channel_names[0], 'VNP_mosaic'+date+'.tif'),
+                                  os.path.join(root_path+'data/mosaic/channels', date, channel_names[1], 'VNP_mosaic'+date+'.tif'),
+                                  os.path.join(root_path+'data/mosaic/channels', date, channel_names[2], 'VNP_mosaic'+date+'.tif')], mosaic_day_paths[k])
         print('Finish Creating mosaic ', k)
 
 def patch_images(id, start_date, end_date, dir_mosaics, interval):
@@ -123,7 +124,7 @@ def patch_images(id, start_date, end_date, dir_mosaics, interval):
     for i in range(duration.days//interval):
         date = (datetime.datetime.strptime(start_date, '%Y-%m-%d') + datetime.timedelta(i*interval)).strftime('%Y-%m-%d')
         from_date = date
-        path = os.path.join(dir_mosaics, date, 'VNP'+date+'_mosaic.tif')
+        path = os.path.join(dir_mosaics, 'VNP_mosaic'+date+'.tif')
         tif, _ = main_mosaic.read_tiff(path)
         image = np.array(tif)
         patched_image = patch_image(image)
@@ -131,7 +132,7 @@ def patch_images(id, start_date, end_date, dir_mosaics, interval):
         for j in range(interval-1):
             date = (datetime.datetime.strptime(start_date, '%Y-%m-%d') + datetime.timedelta(i*interval+j+1)).strftime('%Y-%m-%d')
             print(date)
-            path = os.path.join(dir_mosaics, date, 'VNP'+date+'_mosaic.tif')
+            path = os.path.join(dir_mosaics, 'VNP_mosaic'+date+'.tif')
             tif, _ = main_mosaic.read_tiff(path)
             image2 = np.array(tif)
             patched_image2 = patch_image(image2)
@@ -142,22 +143,16 @@ def patch_images(id, start_date, end_date, dir_mosaics, interval):
         np.save(root_path+'data/mosaic/output/batched_patches_'+from_date+'-'+to_date,patched_image)
 
 def patch_image(img):
-    shape = img.shape
-    patched_image = flatten(skimage.util.view_as_windows(img[:,:shape[1]//128*128,:shape[2]//128*128], window_shape = (8, 256, 256), step = 128).squeeze(),3)
-    patched_image = patched_image.reshape(-1, *patched_image.shape[-3:])
-
-    if shape[1]//128*128 != shape[1]:
-        patched_edge = flatten(skimage.util.view_as_windows(img[:,shape[1]-256:shape[1],:shape[2]//128*128], window_shape = (8, 256, 256), step = 128).squeeze(),3)
-        patched_image = np.concatenate((patched_image, patched_edge),axis=0)
-
-    if shape[2]//128*128 != shape[2]:
-        patched_edge = flatten(skimage.util.view_as_windows(img[:,:shape[1]//128*128,shape[2]-256:shape[2]], window_shape = (8, 256, 256), step = 128).squeeze(),3)
-        patched_image = np.concatenate((patched_image, patched_edge),axis=0)
-
-    if shape[1]//128*128 != shape[1] and shape[2]//128*128 != shape[2]:
-        patched_image = np.concatenate((patched_image, np.expand_dims(img[:,shape[1]-256:shape[1],shape[2]-256:shape[2]],axis=0)),axis=0)
-
-    return np.expand_dims(patched_image,axis=2)
+    patched_image = np.zeros(shape=(10,10,8,256,256))
+    for i in range(1488//128-2):
+        for j in range(1488//128-2):
+            patched_image[i,j,:,:,:] = img[:,128*i:128*(i+2),128*j:128*(j+2)]
+    for j in range(1488//128-2):
+        patched_image[9,j,:,:,:] = img[:,1488-256:,128*j:128*(j+2)]
+    for i in range(1488//128-2):
+        patched_image[i,9,:,:,:] = img[:,128*i:128*(i+2),1488-256:]
+    patched_image[9,9,:,:,:] = img[:,1488-256:,1488-256:]
+    return np.expand_dims(flatten(patched_image,3),axis=2)
 
 def flatten(array,except_last_rows):
     return array.reshape(-1, *array.shape[-except_last_rows:])

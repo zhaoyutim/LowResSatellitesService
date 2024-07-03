@@ -38,6 +38,7 @@ def read_tiff(file_path):
     with rasterio.open(file_path) as src:
         image = src.read()
         metadata = src.meta
+    print("Reading tiff of shape",image.shape)
     return image, metadata
 
 def combine_tiff(file_paths,output_path,axis=0):

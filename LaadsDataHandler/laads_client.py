@@ -21,7 +21,6 @@ class LaadsClient:
             'Authorization': 'Bearer ' + config.auth_token}
 
     def runcmd(self, cmd, verbose=False, *args, **kwargs):
-
         process = subprocess.Popen(
             cmd,
             stdout=subprocess.PIPE,
@@ -34,7 +33,6 @@ class LaadsClient:
             print(std_out.strip(), std_err)
         pass
     def query_filelist_with_date_range_and_area_of_interest(self, id, date, area_of_interest='W-129 N56.2 E-110.4 S31.7', products_id = ['VNP02IMG', 'VNP03IMG'], day_night_modes=['D', 'N'], data_path=root_path+'data/VNPL1', collection_id='5110'):
-        # products_id = ['VNP02IMG', 'VNP03IMG']
         for day_night in day_night_modes:
             for i in range(len(products_id)):
                 product_id = products_id[i]
@@ -48,7 +46,7 @@ class LaadsClient:
                 json_path = os.path.join(data_path, id, date, day_night)
                 if os.path.exists(os.path.join(json_path, date + '_' + product_id + '.json')):
                     print('Json already exist, update the Json')
-                    # os.remove(os.path.join(json_path, date + '_' + product_id + '.json'))
+
                 # Create a Retry object with the desired number of retries
                 retries = Retry(total=25, backoff_max=15, backoff_factor=0.05, status_forcelist=[500, 502, 503, 504])
 
@@ -79,7 +77,6 @@ class LaadsClient:
                 vnp_json = open(os.path.join(json_path, id, date, day_night, date + '_' + product_id + '.json'), 'rb')
                 vnp_list = json.load(vnp_json)['content']
                 vnp_list = [file for file in vnp_list if file['archiveSets']==int(collection_id)]
-                # print('There are ' + str(vnp_list.__len__()) + ' ' + product_id +' files to download in total.')
                 print('Product ID: {}, Day Night : {}'.format(product_id, day_night))
                 for vnp_file in vnp_list:
                     vnp_name = vnp_file['name']
