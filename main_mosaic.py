@@ -51,8 +51,8 @@ def combine_tiff(file_paths,output_path,axis=0):
         image1 = combined_image
         combined_metadata = metadata1.copy()
         combined_metadata["count"] = combined_image.shape[0]
-    print("Creating image of shape ", combined_image.shape)
-    write_tiff(output_path, combined_image, combined_metadata)
+        print("Creating image of shape ", combined_image.shape)
+        write_tiff(output_path, combined_image, combined_metadata)
 
 
 if __name__=='__main__':

@@ -8,13 +8,13 @@ conda install -y -c conda-forge postgresql
 # create a base database locally
 ####################################
 
-initdb -D mylocal_db
+initdb -D local_db
 
 ##############################
 # now start the server modus/instance of postgres
 ##############################
 
-pg_ctl -D mylocal_db -l logfile start
+pg_ctl -D local_db -l logfile start
 
 ## waiting for server to start.... done
 ## server started

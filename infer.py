@@ -45,8 +45,8 @@ def run(model_name,mode,batch_size,num_heads,hidden_size,n_channel,ts_length,att
         transform = Normalize(mean = [18.76488,27.441864,20.584806,305.99478,294.31738,14.625097,276.4207,275.16766],
             std = [15.911591,14.879259,10.832616,21.761852,24.703484,9.878246,40.64329,40.7657])
 
-    device = torch.device("cuda:0" if torch.cuda.is_available() else "cpu")
-    num_classes =2
+    device = torch.device("cuda:9" if torch.cuda.is_available() else "cpu")
+    num_classes = 2
     image_size = (ts_length, 256, 256)
     patch_size = (1, 2, 2)
     window_size = (ts_length, 4, 4)
@@ -80,39 +80,50 @@ def run(model_name,mode,batch_size,num_heads,hidden_size,n_channel,ts_length,att
     else:
         raise 'not implemented'
 
-    model = nn.DataParallel(model)
-    model.to(device)
-
-    print('Number of Parameter:', sum(p.numel() for p in model.parameters())/1e6, "M")
+    print('Number of Parameters:', sum(p.numel() for p in model.parameters())/1e6, "M")
     post_trans = Compose([Activations(sigmoid=True), AsDiscrete(threshold=0.5)])
     optimizer = optim.Adam(model.parameters())
-    model.to(device)
     
     if plot:
         os.makedirs(root_path+'/evaluation_plot',exist_ok=True)
 
-    load_epoch = 80
-    checkpoint = torch.load(checkpoint_path)
+    checkpoint = torch.load(checkpoint_path,map_location='cpu')
     model.load_state_dict(checkpoint['model_state_dict'])
     optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
+
+    #from collections import OrderedDict
+    #state_dict = torch.load(checkpoint_path, map_location='cpu')
+    #model_state_dict = state_dict['model_state_dict']
+    #new_state_dict = OrderedDict()
+    #for k, v in model_state_dict.items():
+    #    new_state_dict[k.replace("module.", "")] = v
+    #model.load_state_dict(new_state_dict)
+    #state_dict['model_state_dict'] = model.state_dict()
+    #torch.save(state_dict,checkpoint_path)
+
+    model = nn.DataParallel(model,device_ids=[9,8,7,6,5,4,3])
+    model.to(device)
 
     model.eval() 
     def normalization(array):
         return (array-array.min()) / (array.max() - array.min())
 
-    paths = []
-    dates_list = list(np.arange(np.datetime64(start_date), np.datetime64(end_date) + np.timedelta64(1, 'D')))
+    data_paths = []
+    dates_list = list(np.arange(np.datetime64(start_date), np.datetime64(end_date)))
     for i in range(len(dates_list)//ts_length):
         date_interval = str(dates_list[i])+"-"+str(dates_list[i+ts_length-1])
         print(date_interval)
-        paths.extend(glob.glob(data_path+'/*'+date_interval+'.npy', recursive=True))
+        data_paths.extend(glob.glob(data_path+'/'+date_interval+'*.npy', recursive=True))
+    
+    print("Found ", len(data_paths), " files." )
+    
+    save_path = output_path+'/'+ model_name + '/' + 'raw/'
+    os.makedirs(save_path,exist_ok=True)
 
-    print("Found ", len(paths), " files." )
-
-    for l in range(len(paths)):
-        test_dataset = InferenceDataset(paths[l], transform)
+    for l in range(len(data_paths)):
+        test_dataset = InferenceDataset(data_paths[l], transform)
         test_dataloader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
-        results = np.zeros(shape=(len(test_dataset),2,256,256))
+        results = np.zeros(shape=(len(test_dataset),ts_length,256,256))
         
         idx=0
         for j, batch in enumerate(test_dataloader):
@@ -138,5 +149,9 @@ def run(model_name,mode,batch_size,num_heads,hidden_size,n_channel,ts_length,att
             
             results[idx:idx+outputs.shape[0],:,:,:] = outputs[:, 1, :, :, :]>0.5
             idx = idx+outputs.shape[0]
+        roi = data_paths[l].split('/')[-1].split('_')[1:]
+        roi[-1] = roi[-1][:-4]
+        roi_string = '_'.join(roi)
+        np.save(save_path + start_date +"-"+ end_date +"_"+roi_string, results)
+        print("Inference for file", l, "completed.")
 
-        np.save(output_path+'/model_{}_id_{}'.format(model_name, paths[l].split("_")[2].split(".")[0]), results)

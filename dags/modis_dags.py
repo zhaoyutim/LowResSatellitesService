@@ -8,7 +8,6 @@ sys.path.insert(0,root_path)
 import billiard as multiprocessing
 from easydict import EasyDict as edict
 import rioxarray as rxr
-from prettyprinter import pprint
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 import datetime
@@ -16,26 +15,17 @@ from utils import config
 
 from utils.utils import upload_hdf
 
-dag = DAG(
-    'MODIS_process_and_upload_NA',
-    default_args=config.default_args,
-    schedule_interval='0 10 * * *',
-    description='A DAG for processing North America MODIS images and upload to gee',
-)
-
 dir_data = Path(root_path + 'data/MOD09GA')
 dir_tif = Path(root_path + 'data/MOD09GATIF')
-dn = ['D']
-id = 'NA'
-utmzone = '4326'
-roi_arg = '-138,48,-109,60'
-# North America
-hh_list = ['08', '09', '10', '11', '12', '13', '14']
-vv_list = ['02', '03', '04', '05']
+
 SOURCE = edict(config.modis_config['MOD09GA'])
 products_id = SOURCE.products_id
 collection_id = SOURCE.collection_id
-asset_id = 'projects/ee-eo4wildfire/assets/MODIS_NA/'
+start_date = (datetime.datetime.today()-datetime.timedelta(days=1)).strftime('%Y-%m-%d')
+ids = ["NA","EU"]
+hh_lists = [['08', '09', '10', '11', '12', '13', '14'], #NA
+            ['17', '18', '19', '20', '21', '22', '23']] #EU
+vv_list = ['02', '03', '04', '05']
 
 def download_files(id, start_date, dir_data, collection_id, products_id, hh_list=['10', '11'], vv_list =['03']):
     year = start_date[:4]
@@ -111,43 +101,49 @@ def upload_in_parallel(id, start_date, asset_id, filepath=root_path+'data/MOD09G
             results.append(result)
         results = [result.get() for result in results if result is not None]
 
-download_task = PythonOperator(
-    task_id='download_task',
-    python_callable=download_files,
-    op_kwargs={
-        'id':id,
-        'start_date':(datetime.datetime.today()-datetime.timedelta(days=1)).strftime('%Y-%m-%d'),
-        'dir_data':dir_data,
-        'dir_tif':dir_tif,
-        'collection_id':collection_id,
-        'products_id':products_id,
-        'hh_list':hh_list,
-        'vv_list':vv_list
-    },
-    dag=dag,
-)
 
-convert_hdf_to_geotiff_task = PythonOperator(
-    task_id='convert_hdf_to_geotiff',
-    python_callable=convert_hdf_to_geotiff,
-    op_kwargs={
-        'id':id,
-        'start_date':(datetime.datetime.today()-datetime.timedelta(days=1)).strftime('%Y-%m-%d'),
-        'dir_data': dir_data,
-        'dir_tif': dir_tif,
-        'SOURCE': SOURCE
-    },
-    dag=dag,
-)
-upload_gee_task = PythonOperator(
-    task_id='upload_gee_task',
-    python_callable=upload_in_parallel,
-    op_kwargs={
-        'id':id,
-        'start_date': (datetime.datetime.today() - datetime.timedelta(days=1)).strftime('%Y-%m-%d'),
-        'asset_id': asset_id
-    },
-    dag=dag,
-)
+for i in range(len(ids)):
+    dag = DAG(
+        f'MODIS_process_and_upload_{ids[i]}',
+        default_args=config.default_args,
+        schedule_interval='0 10 * * *',
+        description='A DAG for processing MODIS images and upload to gee',
+    )
+    with dag:
+        download_task = PythonOperator(
+            task_id='download_task',
+            python_callable=download_files,
+            op_kwargs={
+                'id':ids[i],
+                'start_date': start_date,
+                'dir_data':dir_data,
+                'dir_tif':dir_tif,
+                'collection_id':collection_id,
+                'products_id':products_id,
+                'hh_list':hh_lists[i],
+                'vv_list':vv_list
+            }
+        )
 
-download_task >> convert_hdf_to_geotiff_task >> upload_gee_task
+        convert_hdf_to_geotiff_task = PythonOperator(
+            task_id='convert_hdf_to_geotiff',
+            python_callable=convert_hdf_to_geotiff,
+            op_kwargs={
+                'id':ids[i],
+                'start_date': start_date,
+                'dir_data': dir_data,
+                'dir_tif': dir_tif,
+                'SOURCE': SOURCE
+            }
+        )
+        upload_gee_task = PythonOperator(
+            task_id='upload_gee_task',
+            python_callable=upload_in_parallel,
+            op_kwargs={
+                'id':ids[i],
+                'start_date': start_date,
+                'asset_id': f'projects/ee-eo4wildfire/assets/MODIS_{ids[i]}/'
+            }
+        )
+
+        download_task >> convert_hdf_to_geotiff_task >> upload_gee_task
